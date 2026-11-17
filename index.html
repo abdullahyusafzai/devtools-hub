@@ -77,6 +77,7 @@
   <!-- All of the React application code goes here -->
   <script type="module">
   import { plannedToolCatalog } from './src/tool-catalog.js';
+  import { Base64Tool, HtmlEntitiesTool, Sha256Tool, UnixTimestampTool, UuidTool } from './src/developer-tools.js';
 
     // Centralized list of tools with their IDs, names, and SVG icons
     const tools = [
@@ -94,6 +95,15 @@
       { id: 'text-to-speech', name: 'Text to Speech', svg: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2a10 10 0 1 0 10 10A10 10 0 0 0 12 2zm-2 15a1 1 0 0 1-1-1V8a1 1 0 0 1 2 0v8a1 1 0 0 1-1 1zm4 0a1 1 0 0 1-1-1V8a1 1 0 0 1 2 0v8a1 1 0 0 1-1 1z"/></svg>` },
     ];
 
+    const developerToolIcon = tools.find((tool) => tool.id === 'url-encoder-decoder').svg;
+    tools.push(
+      { id: 'base64-encoder-decoder', name: 'Base64 Encoder/Decoder', svg: developerToolIcon },
+      { id: 'html-encoder-decoder', name: 'HTML Encoder/Decoder', svg: developerToolIcon },
+      { id: 'uuid-generator', name: 'UUID Generator', svg: developerToolIcon },
+      { id: 'sha-256-hash-generator', name: 'SHA-256 Hash Generator', svg: developerToolIcon },
+      { id: 'unix-timestamp-converter', name: 'Unix Timestamp Converter', svg: developerToolIcon }
+    );
+
     const categories = ['All Tools', 'AI Tools', 'Text & Writing', 'PDF & Documents', 'Images & Design', 'Audio & Voice', 'Video', 'QR Codes & Links', 'Developer Tools', 'Calculators & Converters', 'Productivity & Text', 'SEO & Marketing', 'Business & Careers', 'Education', 'Security & Privacy', 'Games & Entertainment'];
     const categoryById = {
       'qr-code-generator': 'QR Codes & Links',
@@ -107,7 +117,12 @@
       'image-resizer': 'Images & Design',
       'image-compressor': 'Images & Design',
       'image-cropper': 'Images & Design',
-      'text-to-speech': 'Audio & Voice'
+      'text-to-speech': 'Audio & Voice',
+      'base64-encoder-decoder': 'Developer Tools',
+      'html-encoder-decoder': 'Developer Tools',
+      'uuid-generator': 'Developer Tools',
+      'sha-256-hash-generator': 'Developer Tools',
+      'unix-timestamp-converter': 'Developer Tools'
     };
     const toolDescriptions = {
       'qr-code-generator': 'Create a scannable code from text or a link.',
@@ -121,7 +136,12 @@
       'image-resizer': 'Resize an image to fit your needs.',
       'image-compressor': 'Reduce image file size in your browser.',
       'image-cropper': 'Crop an image with a touch-friendly selection.',
-      'text-to-speech': 'Preview speech on your device. Paid AI audio generation is disabled under the $0 spending cap.'
+      'text-to-speech': 'Preview speech on your device. Paid AI audio generation is disabled under the $0 spending cap.',
+      'base64-encoder-decoder': 'Encode or decode UTF-8 text as Base64 locally.',
+      'html-encoder-decoder': 'Encode or decode common HTML entities in your browser.',
+      'uuid-generator': 'Generate cryptographically secure version 4 UUIDs locally.',
+      'sha-256-hash-generator': 'Create a SHA-256 digest from text using Web Crypto.',
+      'unix-timestamp-converter': 'Convert Unix timestamps and local dates in both directions.'
     };
     const existingToolNames = new Set(tools.map((tool) => tool.name.toLowerCase()));
     const implementedCatalogNames = new Set(['AI Voice Artist', 'Classic Snake Game', 'Image to PDF', 'JSON Formatter', 'JSON Validator'].map((name) => name.toLowerCase()));
@@ -313,6 +333,16 @@
           case 'json-formatter':
           case 'json-validator':
             return React.createElement(ToolPage, { toolName: currentPage === 'json-validator' ? "JSON Validator" : "JSON Formatter", setCurrentPage }, React.createElement(JsonTool, { key: currentPage, mode: currentPage === 'json-validator' ? 'validate' : 'format' }));
+          case 'base64-encoder-decoder':
+            return React.createElement(ToolPage, { toolName: 'Base64 Encoder/Decoder', setCurrentPage }, React.createElement(Base64Tool));
+          case 'html-encoder-decoder':
+            return React.createElement(ToolPage, { toolName: 'HTML Encoder/Decoder', setCurrentPage }, React.createElement(HtmlEntitiesTool));
+          case 'uuid-generator':
+            return React.createElement(ToolPage, { toolName: 'UUID Generator', setCurrentPage }, React.createElement(UuidTool));
+          case 'sha-256-hash-generator':
+            return React.createElement(ToolPage, { toolName: 'SHA-256 Hash Generator', setCurrentPage }, React.createElement(Sha256Tool));
+          case 'unix-timestamp-converter':
+            return React.createElement(ToolPage, { toolName: 'Unix Timestamp Converter', setCurrentPage }, React.createElement(UnixTimestampTool));
           case 'text-to-speech':
           case 'ai-voice-artist':
             return React.createElement(ToolPage, { toolName: currentPage === 'ai-voice-artist' ? "AI Voice Artist" : "Text to Speech & AI Voice Artist", setCurrentPage }, React.createElement(TextToSpeech));
@@ -385,7 +415,7 @@
       const visibleTools = catalogTools.filter((tool) => {
         const searchText = `${tool.name} ${tool.category} ${tool.description} ${tool.keywords || ''}`.toLowerCase();
         const searchTokens = searchText.split(/[^a-z0-9]+/).filter(Boolean);
-        const matchesQuery = queryWords.every((word) => searchTokens.some((token) => token.includes(word) || word.includes(token)));
+        const matchesQuery = queryWords.every((word) => searchTokens.some((token) => token === word || token.includes(word)));
         const matchesCategory = category === 'All Tools' || tool.category === category || (category === 'Text & Writing' && tool.category === 'Productivity & Text');
         const matchesFavorite = !favoritesOnly || favorites.includes(tool.id);
         return (includeDevelopment || tool.available) && matchesQuery && matchesCategory && matchesFavorite;
