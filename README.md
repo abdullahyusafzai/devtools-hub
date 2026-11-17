@@ -1,21 +1,18 @@
 # DevTools Hub
 
-A responsive collection of browser-based utilities, plus a downloadable AI voice feature and Snake game.
+A responsive collection of browser-based utilities, plus a free offline voice generator and Snake game.
 
 ## Local development
 
-1. Install Node.js 22 or newer.
+1. Install Node.js 24 or newer.
 2. Install dependencies with `npm install`.
-3. Copy `.env.example` values into a local `.env` file if needed.
-4. For local downloadable speech, provide `AI_GATEWAY_API_KEY`; the API key stays server-side. Vercel deployments authenticate to AI Gateway automatically.
-5. Start the UI with `npm run dev`; for local serverless API testing, use `npm run dev:vercel` with the Vercel CLI and project linked. Create a production build with `npm run build`.
+3. Copy `.env.example` values into a local `.env` file only if another feature needs them.
+4. Start the UI with `npm run dev`. Create a production build with `npm run build`.
 
-The original utilities, Image to PDF, and JSON Formatter/Validator process data in the browser. Image to PDF keeps image bytes on the device and exports a real PDF. AI Voice Artist sends text to the server-side Vercel Function and an AI Gateway speech model. The downloadable output is MP3; WAV is not advertised by this configured model.
+The original utilities, Image to PDF, JSON Formatter/Validator, and Offline Voice Artist process data in the browser. Image to PDF exports a real PDF. Voice synthesis runs locally with the open-source eSpeak NG engine and self-hosted English voice data, and produces a free WAV download; script text is not sent to any speech service. The bundled engine is GPL-3.0-or-later; its license is included with the voice assets.
 
 ## Deployment
 
-Deploy the repository to Vercel. Vite builds the static page and Vercel serves the `api/voice.js` serverless function. Add `AI_GATEWAY_API_KEY` to the Vercel project only if local/non-Vercel Gateway authentication is required; do not expose secrets in frontend code.
-
-The speech endpoint uses a shared Upstash sliding-window limit of three requests per minute per client, plus a 4,000-character request cap. Accepted requests and character counts are tracked in daily Redis usage counters with a 90-day retention period; client addresses are HMAC-hashed rather than stored directly. The endpoint fails closed with a 503 if shared rate protection is unavailable. Keep the Upstash for Redis integration connected in every deployment environment.
+Deploy the repository to Vercel. Vite builds the static page and Vercel serves the self-hosted speech-engine assets. The offline voice generator requires no serverless speech endpoint, provider credentials, or Redis integration.
 
 See [PROJECT_REQUIREMENTS.md](PROJECT_REQUIREMENTS.md) and [TOOL_CHECKLIST.md](TOOL_CHECKLIST.md) for scope and implementation status.

@@ -47,7 +47,9 @@ test('SHA-256 matches the standard digest for a known input', async () => {
 });
 
 test('local text utilities correct only common surface issues and normalize text safely', () => {
-  assert.equal(correctCommonGrammar('i dont know!!  it is teh best'), "I don't know! it is the best");
+  const correction = correctCommonGrammar('i dont know!!  it is teh best');
+  assert.equal(correction.text, "I don't know! It is the best");
+  assert.ok(correction.corrections > 0);
   assert.equal(removeDuplicateLines('Alpha\nalpha\nBeta\n\nBeta'), 'Alpha\nBeta');
   assert.equal(cleanText('  hello\t world  \n\n\n next  '), 'hello world\n\nnext');
   assert.equal(createUrlSlug(' Crème brûlée: A Guide! '), 'creme-brulee-a-guide');

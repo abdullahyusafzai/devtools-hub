@@ -134,10 +134,10 @@ export function correctCommonGrammar(value) {
   let text = String(value);
   let corrections = 0;
   const replace = (pattern, replacement) => {
-    text = text.replace(pattern, (...matches) => {
-      corrections += 1;
-      return typeof replacement === 'function' ? replacement(...matches) : replacement;
-    });
+    const matches = text.match(pattern);
+    if (!matches) return;
+    corrections += pattern.global ? matches.length : 1;
+    text = text.replace(pattern, replacement);
   };
 
   replace(/\bi\b/g, 'I');
