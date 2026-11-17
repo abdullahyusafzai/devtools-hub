@@ -3,6 +3,13 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <script>
+    if (window.location.hash.startsWith('#/')) {
+      const route = window.location.hash.slice(2);
+      const canonicalUrl = `${window.location.pathname}${window.location.search}${route ? `#${route}` : ''}`;
+      window.history.replaceState(window.history.state, '', canonicalUrl);
+    }
+  </script>
   <meta name="theme-color" content="#0b1020">
   <meta name="description" content="Create, convert, edit, write, and simplify digital tasks with the DevTools Hub workspace.">
   <title>DevTools Hub — Your digital utility workspace</title>
@@ -237,7 +244,7 @@
 
       const setCurrentPage = (page) => {
         setCurrentPageState(page);
-        const nextUrl = page === 'home' ? `${window.location.pathname}${window.location.search}` : `#/${page}`;
+        const nextUrl = page === 'home' ? `${window.location.pathname}${window.location.search}` : `#${page}`;
         window.history.pushState(null, '', nextUrl);
         window.scrollTo({ top: 0, behavior: 'smooth' });
       };
