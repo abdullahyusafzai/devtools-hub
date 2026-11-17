@@ -10,7 +10,7 @@ A responsive collection of browser-based utilities, plus a downloadable AI voice
 4. For local downloadable speech, provide `AI_GATEWAY_API_KEY`; the API key stays server-side. Vercel deployments authenticate to AI Gateway automatically.
 5. Start the UI with `npm run dev`; for local serverless API testing, use `npm run dev:vercel` with the Vercel CLI and project linked. Create a production build with `npm run build`.
 
-The original utilities process files in the browser. AI Voice Artist sends its text to the server-side Vercel Function and an AI Gateway speech model. The downloadable output is MP3; WAV is not advertised by this configured model.
+The original utilities, Image to PDF, and JSON Formatter/Validator process data in the browser. Image to PDF keeps image bytes on the device and exports a real PDF. AI Voice Artist sends text to the server-side Vercel Function and an AI Gateway speech model. The downloadable output is MP3; WAV is not advertised by this configured model.
 
 ## Deployment
 

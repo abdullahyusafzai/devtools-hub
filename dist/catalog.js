@@ -44,12 +44,29 @@
     ]
   };
 
+  const searchAliases = {
+    'PDF Compressor': 'compress reduce shrink pdf file size',
+    'Grammar Checker': 'fix grammar mistakes correct writing',
+    'Spell Checker': 'fix spelling typos',
+    'Image Resizer': 'resize my image dimensions',
+    'Text Summarizer': 'summarize shorten notes',
+    'Tic-Tac-Toe': 'play game',
+    'Memory Matching Game': 'play game',
+    'Number Guessing Game': 'play game',
+    'Typing Speed Test': 'play game',
+    'Reaction Time Test': 'play game',
+    'Word Guessing Game': 'play game',
+    'Rock Paper Scissors': 'play game',
+    '2048 Puzzle': 'play game',
+    'Simple Sudoku': 'play game'
+  };
+
   window.plannedToolCatalog = Object.entries(groups).flatMap(([category, names]) => names.map((name) => ({
     id: name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, ''),
     name,
     category,
     description: `${name} is planned for this category and is not released yet.`,
-    keywords: `${name} ${category}`,
+    keywords: `${name} ${category} ${searchAliases[name] || ''}`,
     available: false
   })));
 })();

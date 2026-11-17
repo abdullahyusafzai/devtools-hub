@@ -43,7 +43,7 @@
 - [ ] PDF to Word
 - [ ] Word to PDF
 - [ ] PDF to Image
-- [ ] Image to PDF
+- [x] Image to PDF (local PNG/JPEG processing; up to 20 images; real PDF output)
 - [ ] PDF to Excel
 - [ ] Excel to PDF
 - [ ] PDF Page Rotator
@@ -82,7 +82,7 @@
 - [ ] Social Media Image Resizer
 
 ## Audio & voice
-- [x] AI Voice Artist / Downloadable Text to Speech (real MP3 via server-side provider; live model call requires Gateway authentication)
+- [x] AI Voice Artist / Downloadable Text to Speech (real MP3 via server-side provider, same-model short voice previews; live generation requires Gateway authentication)
 - [ ] Speech to Text
 - [ ] Voice Recorder
 - [ ] Audio Converter
@@ -130,8 +130,8 @@
 - [ ] QR Download as PNG or SVG
 
 ## Developer tools
-- [ ] JSON Formatter
-- [ ] JSON Validator
+- [x] JSON Formatter (pretty-print/minify, copy, and download; local processing)
+- [x] JSON Validator (local syntax validation with clear parse errors)
 - [ ] XML Formatter
 - [ ] YAML Formatter
 - [ ] HTML Formatter

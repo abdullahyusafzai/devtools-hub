@@ -12,8 +12,6 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js" defer></script>
   <!-- Load Tailwind CSS from CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
-  <!-- Load Google AdSense script -->
-  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-5058994010586674" crossorigin="anonymous"></script>
   <!-- Configure Tailwind CSS for custom colors and font -->
   <script>
     tailwind.config = {
@@ -45,6 +43,16 @@
     [data-theme="dark"] .bg-gray-100, [data-theme="dark"] .bg-gray-200 { background: var(--surface-muted) !important; }
     [data-theme="dark"] .text-gray-900, [data-theme="dark"] .text-gray-800, [data-theme="dark"] .text-gray-700, [data-theme="dark"] .text-gray-600, [data-theme="dark"] .text-gray-500 { color: var(--muted) !important; }
     [data-theme="dark"] .border-gray-300, [data-theme="dark"] .border-gray-200 { border-color: var(--line) !important; }
+    [data-theme="dark"] [class~="bg-white/80"] { background: var(--surface) !important; }
+    [data-theme="dark"] [class~="bg-violet-50/70"] { background: var(--accent-soft) !important; }
+    [data-theme="dark"] .bg-blue-50 { background: #14213a !important; }
+    [data-theme="dark"] .text-blue-900 { color: #bfdbfe !important; }
+    [data-theme="dark"] .border-blue-200 { border-color: #324b76 !important; }
+    [data-theme="dark"] .bg-emerald-50 { background: #12372e !important; }
+    [data-theme="dark"] .text-emerald-700 { color: #86efac !important; }
+    [data-theme="dark"] .bg-amber-50 { background: #3a2f16 !important; }
+    [data-theme="dark"] .text-amber-800 { color: #fcd34d !important; }
+    [data-theme="dark"] .text-red-700 { color: #fca5a5 !important; }
     [data-theme="dark"] footer { border-color: var(--line) !important; color: var(--muted) !important; }
     .snake-board { width: min(100%, 400px); aspect-ratio: 1; touch-action: none; }
     .safe-wrap { overflow-wrap: anywhere; }
@@ -58,6 +66,7 @@
 
   <script src="/catalog.js"></script>
   <script src="/snake-game.js"></script>
+  <script type="module" src="/src/pdf-tools-loader.js"></script>
 
   <!-- All of the React application code goes here -->
   <script>
@@ -109,6 +118,7 @@
       'text-to-speech': 'Preview speech in-browser or generate a downloadable MP3.'
     };
     const existingToolNames = new Set(tools.map((tool) => tool.name.toLowerCase()));
+    const implementedCatalogNames = new Set(['AI Voice Artist', 'Classic Snake Game', 'Image to PDF', 'JSON Formatter', 'JSON Validator'].map((name) => name.toLowerCase()));
     const catalogTools = [
       ...tools.map((tool) => ({
         ...tool,
@@ -117,9 +127,12 @@
         keywords: tool.id === 'text-to-speech' ? 'ai voice artist downloadable text to speech mp3 voiceover narration convert audio speak' : tool.id === 'url-encoder-decoder' ? 'url encode decode developer links' : tool.id,
         available: true
       })),
-      ...window.plannedToolCatalog.filter((tool) => !existingToolNames.has(tool.name.toLowerCase())),
+      ...window.plannedToolCatalog.filter((tool) => !existingToolNames.has(tool.name.toLowerCase()) && !implementedCatalogNames.has(tool.name.toLowerCase())),
       { id: 'ai-voice-artist', name: 'AI Voice Artist', category: 'Audio & Voice', description: 'Generate and download real MP3 voiceovers using supported AI voices.', keywords: 'text speech downloadable mp3 voice narration convert', available: true, svg: tools.find((tool) => tool.id === 'text-to-speech').svg },
-      { id: 'snake-game', name: 'Classic Snake Game', category: 'Games & Entertainment', description: 'Play a responsive grid-based Snake game with touch and keyboard controls.', keywords: 'snake game nokia classic games play', available: true, svg: tools[0].svg }
+      { id: 'snake-game', name: 'Classic Snake Game', category: 'Games & Entertainment', description: 'Play a responsive grid-based Snake game with touch and keyboard controls.', keywords: 'snake game nokia classic games play', available: true, svg: tools[0].svg },
+      { id: 'image-to-pdf', name: 'Image to PDF', category: 'PDF & Documents', description: 'Combine PNG and JPEG images into a private, locally created PDF.', keywords: 'pdf convert images jpg png document', available: true, svg: tools.find((tool) => tool.id === 'image-converter').svg },
+      { id: 'json-formatter', name: 'JSON Formatter', category: 'Developer Tools', description: 'Format, minify, copy, and download JSON in your browser.', keywords: 'json prettify format minify developer', available: true, svg: tools.find((tool) => tool.id === 'url-encoder-decoder').svg },
+      { id: 'json-validator', name: 'JSON Validator', category: 'Developer Tools', description: 'Validate JSON syntax locally and see clear error feedback.', keywords: 'json validate syntax developer', available: true, svg: tools.find((tool) => tool.id === 'url-encoder-decoder').svg }
     ];
 
     const copyTextToClipboard = async (value) => {
@@ -172,15 +185,30 @@
     const AdSenseAd = ({ slot, client = "ca-pub-5058994010586674" }) => {
       const hasValidSlot = /^\d{5,}$/.test(String(slot || ''));
       React.useEffect(() => {
-        if (!hasValidSlot) return;
-        try {
-          if (typeof window !== 'undefined' && window.adsbygoogle) {
+        if (!hasValidSlot) return undefined;
+        let script = document.querySelector('script[data-adsense-loader]');
+        const pushAd = () => {
+          try {
             (window.adsbygoogle = window.adsbygoogle || []).push({});
-          }
-        } catch (error) {
-          console.error("AdSense script failed to load", error);
+          } catch {}
+        };
+        if (script?.dataset.loaded === 'true') {
+          pushAd();
+          return undefined;
         }
-      }, [hasValidSlot]);
+        if (!script) {
+          script = document.createElement('script');
+          script.async = true;
+          script.dataset.adsenseLoader = 'true';
+          script.src = `https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=${encodeURIComponent(client)}`;
+          script.crossOrigin = 'anonymous';
+          script.addEventListener('load', () => { script.dataset.loaded = 'true'; pushAd(); }, { once: true });
+          document.head.appendChild(script);
+        } else {
+          script.addEventListener('load', pushAd, { once: true });
+        }
+        return undefined;
+      }, [client, hasValidSlot]);
 
       if (!hasValidSlot) return null;
       return React.createElement('div', { className: "flex justify-center p-2 my-4" },
@@ -256,6 +284,11 @@
             return React.createElement(ToolPage, { toolName: "Image Compressor", setCurrentPage }, React.createElement(ImageCompressor));
           case 'image-cropper':
             return React.createElement(ToolPage, { toolName: "Simple Image Cropper", setCurrentPage }, React.createElement(SimpleImageCropper));
+          case 'image-to-pdf':
+            return React.createElement(ToolPage, { toolName: "Image to PDF", setCurrentPage }, React.createElement(ImageToPdf));
+          case 'json-formatter':
+          case 'json-validator':
+            return React.createElement(ToolPage, { toolName: currentPage === 'json-validator' ? "JSON Validator" : "JSON Formatter", setCurrentPage }, React.createElement(JsonTool, { key: currentPage, mode: currentPage === 'json-validator' ? 'validate' : 'format' }));
           case 'text-to-speech':
           case 'ai-voice-artist':
             return React.createElement(ToolPage, { toolName: currentPage === 'ai-voice-artist' ? "AI Voice Artist" : "Text to Speech & AI Voice Artist", setCurrentPage }, React.createElement(TextToSpeech));
@@ -1482,6 +1515,186 @@
       );
     };
 
+    const ImageToPdf = () => {
+      const [files, setFiles] = React.useState([]);
+      const [isReady, setIsReady] = React.useState(false);
+      const [isProcessing, setIsProcessing] = React.useState(false);
+      const [progress, setProgress] = React.useState('');
+      const [error, setError] = React.useState('');
+      const [status, setStatus] = React.useState('');
+      const [pdfUrl, setPdfUrl] = React.useState('');
+      const maxFiles = 20;
+      const maxFileBytes = 10 * 1024 * 1024;
+      const maxTotalBytes = 50 * 1024 * 1024;
+
+      React.useEffect(() => {
+        const updateReady = () => setIsReady(typeof window.createImagePdf === 'function');
+        updateReady();
+        window.addEventListener('pdf-tools-ready', updateReady);
+        return () => window.removeEventListener('pdf-tools-ready', updateReady);
+      }, []);
+
+      React.useEffect(() => {
+        if (!pdfUrl) return undefined;
+        return () => URL.revokeObjectURL(pdfUrl);
+      }, [pdfUrl]);
+
+      const handleFileChange = (event) => {
+        const selectedFiles = Array.from(event.target.files || []);
+        setError('');
+        setStatus('');
+        setProgress('');
+        setPdfUrl('');
+        if (selectedFiles.length > maxFiles) {
+          setFiles([]);
+          setError(`Choose ${maxFiles} images or fewer.`);
+          return;
+        }
+        if (selectedFiles.some((file) => !['image/png', 'image/jpeg'].includes(file.type))) {
+          setFiles([]);
+          setError('Only PNG and JPEG images are supported.');
+          return;
+        }
+        if (selectedFiles.some((file) => file.size > maxFileBytes)) {
+          setFiles([]);
+          setError('Each image must be 10 MB or smaller.');
+          return;
+        }
+        if (selectedFiles.reduce((total, file) => total + file.size, 0) > maxTotalBytes) {
+          setFiles([]);
+          setError('The combined image size must be 50 MB or smaller.');
+          return;
+        }
+        setFiles(selectedFiles);
+      };
+
+      const createPdf = async () => {
+        if (!files.length) {
+          setError('Select at least one PNG or JPEG image.');
+          return;
+        }
+        if (!isReady || typeof window.createImagePdf !== 'function') {
+          setError('The PDF converter is still loading. Try again in a moment.');
+          return;
+        }
+        setError('');
+        setStatus('');
+        setPdfUrl('');
+        setIsProcessing(true);
+        try {
+          const pdfBlob = await window.createImagePdf(files, (completed, total) => setProgress(`Adding image ${completed} of ${total}…`));
+          setPdfUrl(URL.createObjectURL(pdfBlob));
+          setProgress('');
+          setStatus(`PDF created with ${files.length} ${files.length === 1 ? 'page' : 'pages'}.`);
+        } catch (conversionError) {
+          setProgress('');
+          setError(conversionError.message || 'Could not create a PDF from these images.');
+        } finally {
+          setIsProcessing(false);
+        }
+      };
+
+      const reset = () => {
+        setFiles([]);
+        setPdfUrl('');
+        setError('');
+        setStatus('');
+        setProgress('');
+        const input = document.getElementById('image-pdf-files');
+        if (input) input.value = '';
+      };
+
+      return React.createElement('div', { className: 'mx-auto max-w-3xl' },
+        React.createElement('div', { className: 'mb-6' },
+          React.createElement('p', { className: 'mb-2 text-xs font-bold uppercase tracking-[.16em] text-violet-600' }, 'PDF & documents'),
+          React.createElement('h2', { className: 'text-3xl font-bold tracking-tight text-gray-900' }, 'Image to PDF'),
+          React.createElement('p', { className: 'mt-2 text-sm leading-6 text-gray-500' }, 'Create a standard letter-size PDF with one image per page. Images are processed locally and never uploaded.'),
+          React.createElement('div', { className: 'mt-4 rounded-xl border border-blue-200 bg-blue-50 p-3 text-xs leading-5 text-blue-900' }, 'PNG and JPEG only. Up to 20 images, 10 MB each, and 50 MB combined. Images are centered and scaled to fit while preserving their proportions.')),
+        React.createElement('label', { htmlFor: 'image-pdf-files', className: 'mb-2 block text-sm font-semibold text-gray-800' }, 'Choose images'),
+        React.createElement('input', { id: 'image-pdf-files', type: 'file', accept: 'image/png,image/jpeg', multiple: true, onChange: handleFileChange, className: 'block w-full rounded-xl border border-gray-300 bg-white p-3 text-sm file:mr-3 file:rounded-lg file:border-0 file:bg-violet-100 file:px-3 file:py-2 file:font-semibold file:text-violet-700' }),
+        files.length > 0 && React.createElement('ul', { className: 'mt-4 max-h-48 space-y-2 overflow-y-auto rounded-xl border border-gray-200 bg-white p-3 text-sm text-gray-700', 'aria-label': 'Selected images' }, files.map((file, index) => React.createElement('li', { key: `${file.name}-${index}`, className: 'flex items-center justify-between gap-3' }, React.createElement('span', { className: 'safe-wrap min-w-0 flex-1' }, `${index + 1}. ${file.name}`), React.createElement('span', { className: 'shrink-0 text-xs text-gray-500' }, `${(file.size / 1024 / 1024).toFixed(2)} MB`)))),
+        error && React.createElement('p', { className: 'mt-4 text-sm text-red-700', role: 'alert' }, error),
+        status && React.createElement('p', { className: 'mt-4 text-sm text-emerald-700', role: 'status', 'aria-live': 'polite' }, status),
+        progress && React.createElement('p', { className: 'mt-2 text-xs text-gray-500', role: 'status', 'aria-live': 'polite' }, progress),
+        React.createElement('div', { className: 'mt-5 flex flex-wrap gap-3' },
+          React.createElement('button', { type: 'button', onClick: createPdf, disabled: !files.length || !isReady || isProcessing, className: 'rounded-xl bg-violet-600 px-5 py-3 text-sm font-semibold text-white hover:bg-violet-700 disabled:cursor-not-allowed disabled:opacity-50' }, isProcessing ? 'Creating PDF…' : isReady ? 'Create PDF' : 'Loading PDF converter…'),
+          React.createElement('button', { type: 'button', onClick: reset, disabled: !files.length && !pdfUrl, className: 'rounded-xl border border-gray-300 bg-white px-5 py-3 text-sm font-semibold text-gray-700 hover:bg-gray-50 disabled:opacity-50' }, 'Reset'),
+          pdfUrl && React.createElement('a', { href: pdfUrl, download: 'images.pdf', className: 'rounded-xl bg-gray-900 px-5 py-3 text-sm font-semibold text-white hover:bg-gray-700' }, 'Download PDF'))
+      );
+    };
+
+    const JsonTool = ({ mode }) => {
+      const [input, setInput] = React.useState('');
+      const [output, setOutput] = React.useState('');
+      const [error, setError] = React.useState('');
+      const [status, setStatus] = React.useState('');
+      const maxCharacters = 200000;
+      const isValidator = mode === 'validate';
+
+      const processJson = (format) => {
+        if (!input.trim()) {
+          setOutput('');
+          setStatus('');
+          setError('Enter JSON to continue.');
+          return;
+        }
+        try {
+          const parsed = JSON.parse(input);
+          setError('');
+          if (isValidator) {
+            setOutput('');
+            setStatus('Valid JSON. The input is syntactically correct.');
+          } else {
+            setOutput(JSON.stringify(parsed, null, format === 'compact' ? 0 : 2));
+            setStatus(format === 'compact' ? 'JSON minified successfully.' : 'JSON formatted successfully.');
+          }
+        } catch (parseError) {
+          setOutput('');
+          setStatus('');
+          setError(`Invalid JSON: ${parseError.message}`);
+        }
+      };
+
+      const clear = () => { setInput(''); setOutput(''); setError(''); setStatus(''); };
+      const copyOutput = async () => {
+        const copied = await copyTextToClipboard(output);
+        setStatus(copied ? 'Formatted JSON copied.' : 'Could not copy JSON in this browser.');
+      };
+      const downloadOutput = () => {
+        const url = URL.createObjectURL(new Blob([output], { type: 'application/json;charset=utf-8' }));
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = 'formatted.json';
+        link.click();
+        window.setTimeout(() => URL.revokeObjectURL(url), 1000);
+      };
+
+      return React.createElement('div', { className: 'mx-auto max-w-3xl' },
+        React.createElement('div', { className: 'mb-6' },
+          React.createElement('p', { className: 'mb-2 text-xs font-bold uppercase tracking-[.16em] text-violet-600' }, 'Developer tools'),
+          React.createElement('h2', { className: 'text-3xl font-bold tracking-tight text-gray-900' }, isValidator ? 'JSON Validator' : 'JSON Formatter'),
+          React.createElement('p', { className: 'mt-2 text-sm leading-6 text-gray-500' }, isValidator ? 'Check JSON syntax instantly in your browser. Your data stays on this device.' : 'Format or minify JSON, then copy or download the result. Processing stays in your browser.')),
+        React.createElement('label', { htmlFor: `json-input-${mode}`, className: 'mb-2 block text-sm font-semibold text-gray-800' }, 'JSON input'),
+        React.createElement('textarea', { id: `json-input-${mode}`, value: input, maxLength: maxCharacters, onChange: (event) => { setInput(event.target.value); setError(''); setStatus(''); }, placeholder: '{"name":"DevTools Hub","ready":true}', className: 'safe-wrap min-h-64 w-full resize-y rounded-2xl border border-gray-300 bg-white p-4 font-mono text-sm leading-6 focus:border-violet-500 focus:outline-none focus:ring-2 focus:ring-violet-100' }),
+        React.createElement('div', { className: 'mt-2 flex flex-wrap items-center justify-between gap-3 text-xs text-gray-500' }, React.createElement('span', null, `${input.length.toLocaleString()} / ${maxCharacters.toLocaleString()} characters`), React.createElement('div', { className: 'flex gap-3' },
+          React.createElement('button', { type: 'button', onClick: () => setInput('{"name":"DevTools Hub","ready":true,"tools":["JSON Formatter","Image to PDF"]}'), className: 'font-semibold text-violet-600 hover:text-violet-800' }, 'Use example'),
+          React.createElement('button', { type: 'button', onClick: clear, className: 'font-semibold text-gray-500 hover:text-gray-800' }, 'Clear'))),
+        React.createElement('div', { className: 'mt-5 flex flex-wrap gap-3' },
+          isValidator
+            ? React.createElement('button', { type: 'button', onClick: () => processJson('pretty'), disabled: !input.trim(), className: 'rounded-xl bg-violet-600 px-5 py-3 text-sm font-semibold text-white hover:bg-violet-700 disabled:opacity-50' }, 'Validate JSON')
+            : React.createElement(React.Fragment, null,
+              React.createElement('button', { type: 'button', onClick: () => processJson('pretty'), disabled: !input.trim(), className: 'rounded-xl bg-violet-600 px-5 py-3 text-sm font-semibold text-white hover:bg-violet-700 disabled:opacity-50' }, 'Format JSON'),
+              React.createElement('button', { type: 'button', onClick: () => processJson('compact'), disabled: !input.trim(), className: 'rounded-xl border border-gray-300 bg-white px-5 py-3 text-sm font-semibold text-gray-700 hover:bg-gray-50 disabled:opacity-50' }, 'Minify JSON'))),
+        error && React.createElement('p', { className: 'mt-4 text-sm text-red-700', role: 'alert' }, error),
+        status && React.createElement('p', { className: 'mt-4 text-sm text-emerald-700', role: 'status', 'aria-live': 'polite' }, status),
+        output && React.createElement('div', { className: 'mt-5 rounded-2xl border border-gray-200 bg-gray-50 p-4' },
+          React.createElement('div', { className: 'mb-3 flex flex-wrap items-center justify-between gap-2' }, React.createElement('h3', { className: 'font-semibold text-gray-900' }, 'Formatted result'), React.createElement('div', { className: 'flex gap-2' },
+            React.createElement('button', { type: 'button', onClick: copyOutput, className: 'rounded-lg border border-gray-300 bg-white px-3 py-2 text-xs font-semibold text-gray-700 hover:bg-gray-50' }, 'Copy'),
+            React.createElement('button', { type: 'button', onClick: downloadOutput, className: 'rounded-lg bg-gray-900 px-3 py-2 text-xs font-semibold text-white hover:bg-gray-700' }, 'Download JSON'))),
+          React.createElement('pre', { className: 'safe-wrap max-h-[28rem] overflow-auto rounded-xl bg-white p-4 font-mono text-xs leading-5 text-gray-800' }, output))
+      );
+    };
+
     // Text to Speech and downloadable AI Voice Artist
     const TextToSpeech = () => {
       const [text, setText] = React.useState('');
@@ -1495,8 +1708,11 @@
       const [isGenerating, setIsGenerating] = React.useState(false);
       const [voiceError, setVoiceError] = React.useState('');
       const [audioUrl, setAudioUrl] = React.useState('');
+      const [aiPreviewUrl, setAiPreviewUrl] = React.useState('');
+      const [isPreviewingAI, setIsPreviewingAI] = React.useState(false);
       const [filename, setFilename] = React.useState('my-voiceover');
       const abortControllerRef = React.useRef(null);
+      const previewAbortControllerRef = React.useRef(null);
       const maxCharacters = 4000;
 
       React.useEffect(() => {
@@ -1519,6 +1735,16 @@
         if (!audioUrl) return undefined;
         return () => URL.revokeObjectURL(audioUrl);
       }, [audioUrl]);
+
+      React.useEffect(() => {
+        if (!aiPreviewUrl) return undefined;
+        return () => URL.revokeObjectURL(aiPreviewUrl);
+      }, [aiPreviewUrl]);
+
+      React.useEffect(() => () => {
+        abortControllerRef.current?.abort();
+        previewAbortControllerRef.current?.abort();
+      }, []);
 
       const handleSpeak = () => {
         if (!text.trim()) { setVoiceError('Enter some text before starting playback.'); return; }
@@ -1544,28 +1770,52 @@
         setIsSpeaking(false);
       };
 
+      const requestSpeechAudio = async (script, signal) => {
+        const response = await fetch('/api/voice', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ text: script, voice: providerVoice, speed: rate }),
+          signal
+        });
+        if (!response.ok) {
+          const errorBody = await response.json().catch(() => ({}));
+          throw new Error(errorBody.error || `Audio generation failed (${response.status}).`);
+        }
+        const audioBlob = await response.blob();
+        if (!audioBlob.size || !audioBlob.type.startsWith('audio/')) throw new Error('The speech service returned an invalid audio file. Try again.');
+        return URL.createObjectURL(audioBlob);
+      };
+
+      const previewAI = async () => {
+        if (isGenerating || isPreviewingAI) return;
+        setVoiceError('');
+        setAiPreviewUrl('');
+        setIsPreviewingAI(true);
+        const controller = new AbortController();
+        previewAbortControllerRef.current = controller;
+        try {
+          const previewUrl = await requestSpeechAudio('Hello, this is a short preview of the selected AI voice.', controller.signal);
+          setAiPreviewUrl(previewUrl);
+        } catch (error) {
+          if (error.name === 'AbortError') setVoiceError('AI voice preview cancelled.');
+          else setVoiceError(error.message || 'Could not preview this AI voice. Please try again.');
+        } finally {
+          previewAbortControllerRef.current = null;
+          setIsPreviewingAI(false);
+        }
+      };
+
       const generateAudio = async () => {
         const trimmedText = text.trim();
         if (!trimmedText) { setVoiceError('Enter text before generating audio.'); return; }
         if (trimmedText.length > maxCharacters) { setVoiceError(`Keep your script within ${maxCharacters.toLocaleString()} characters.`); return; }
         setVoiceError('');
+        setAudioUrl('');
         setIsGenerating(true);
         const controller = new AbortController();
         abortControllerRef.current = controller;
         try {
-          const response = await fetch('/api/voice', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ text: trimmedText, voice: providerVoice, speed: rate }),
-            signal: controller.signal
-          });
-          if (!response.ok) {
-            const errorBody = await response.json().catch(() => ({}));
-            throw new Error(errorBody.error || `Audio generation failed (${response.status}).`);
-          }
-          const audioBlob = await response.blob();
-          if (!audioBlob.size || !audioBlob.type.startsWith('audio/')) throw new Error('The speech service returned an invalid audio file. Try again.');
-          setAudioUrl(URL.createObjectURL(audioBlob));
+          setAudioUrl(await requestSpeechAudio(trimmedText, controller.signal));
         } catch (error) {
           if (error.name === 'AbortError') setVoiceError('Generation cancelled.');
           else setVoiceError(error.message || 'Could not generate audio. Please try again later.');
@@ -1588,17 +1838,25 @@
           React.createElement('span', null, `${text.length.toLocaleString()} / ${maxCharacters.toLocaleString()} characters`),
           React.createElement('div', { className: 'flex gap-3' },
             React.createElement('button', { type: 'button', onClick: () => setText('Welcome to our guide. In this short narration, we will walk through the key ideas step by step.'), className: 'font-semibold text-violet-600 hover:text-violet-800' }, 'Use example'),
-            React.createElement('button', { type: 'button', onClick: () => { setText(''); setVoiceError(''); setAudioUrl(''); }, className: 'font-semibold text-gray-500 hover:text-gray-800' }, 'Clear text'))),
+            React.createElement('button', { type: 'button', onClick: () => { setText(''); setVoiceError(''); setAudioUrl(''); setAiPreviewUrl(''); }, className: 'font-semibold text-gray-500 hover:text-gray-800' }, 'Clear text'))),
         React.createElement('div', { className: 'my-6 grid gap-4 sm:grid-cols-2' },
           React.createElement('div', null,
             React.createElement('label', { htmlFor: 'ai-voice-select', className: 'mb-2 block text-sm font-semibold text-gray-800' }, 'AI voice (OpenAI TTS-1)'),
-            React.createElement('select', { id: 'ai-voice-select', value: providerVoice, onChange: (event) => setProviderVoice(event.target.value), className: 'w-full rounded-xl border border-gray-300 bg-white px-3 py-3 text-sm' },
+            React.createElement('select', { id: 'ai-voice-select', value: providerVoice, onChange: (event) => { setProviderVoice(event.target.value); setAiPreviewUrl(''); }, className: 'w-full rounded-xl border border-gray-300 bg-white px-3 py-3 text-sm' },
               [['alloy', 'Alloy'], ['echo', 'Echo'], ['fable', 'Fable'], ['onyx', 'Onyx'], ['nova', 'Nova'], ['shimmer', 'Shimmer']].map(([value, label]) => React.createElement('option', { key: value, value }, label))),
             React.createElement('p', { className: 'mt-2 text-xs text-gray-500' }, 'These are the model-supported voice IDs. Language follows the script text; this model does not expose language, pitch, or style controls.')),
           React.createElement('div', null,
             React.createElement('label', { htmlFor: 'voice-speed', className: 'mb-2 block text-sm font-semibold text-gray-800' }, `Speech speed · ${rate.toFixed(1)}×`),
-            React.createElement('input', { id: 'voice-speed', type: 'range', min: '0.5', max: '2', step: '0.1', value: rate, onChange: (event) => setRate(Number(event.target.value)), className: 'mt-2 w-full accent-violet-600' }),
+            React.createElement('input', { id: 'voice-speed', type: 'range', min: '0.5', max: '2', step: '0.1', value: rate, onChange: (event) => { setRate(Number(event.target.value)); setAiPreviewUrl(''); }, className: 'mt-2 w-full accent-violet-600' }),
             React.createElement('p', { className: 'mt-2 text-xs text-gray-500' }, 'Speed is applied to generated speech and the browser preview.'))),
+        React.createElement('div', { className: 'mb-6 rounded-2xl border border-violet-200 bg-violet-50/70 p-4' },
+          React.createElement('div', { className: 'flex flex-wrap items-center justify-between gap-3' },
+            React.createElement('div', null, React.createElement('h3', { className: 'font-semibold text-gray-900' }, 'Preview selected AI voice'), React.createElement('p', { className: 'mt-1 text-xs text-gray-600' }, 'Creates a short sample using the selected model voice and speed; this uses provider generation.')),
+            React.createElement('div', { className: 'flex gap-2' },
+              React.createElement('button', { type: 'button', onClick: previewAI, disabled: isPreviewingAI || isGenerating, className: 'rounded-xl bg-violet-600 px-4 py-2.5 text-sm font-semibold text-white hover:bg-violet-700 disabled:opacity-50' }, isPreviewingAI ? 'Creating preview…' : 'Generate AI preview'),
+              isPreviewingAI && React.createElement('button', { type: 'button', onClick: () => previewAbortControllerRef.current?.abort(), className: 'rounded-xl border border-gray-300 bg-white px-4 py-2.5 text-sm font-semibold' }, 'Cancel'))),
+          isPreviewingAI && React.createElement('p', { className: 'mt-3 text-xs text-gray-600', role: 'status', 'aria-live': 'polite' }, 'Creating a short sample…'),
+          aiPreviewUrl && React.createElement('audio', { controls: true, src: aiPreviewUrl, className: 'mt-4 w-full', 'aria-label': 'Selected AI voice sample' })),
         React.createElement('div', { className: 'mb-6 rounded-2xl border border-gray-200 bg-gray-50 p-4' },
           React.createElement('div', { className: 'mb-4 flex flex-wrap items-center justify-between gap-3' },
             React.createElement('div', null, React.createElement('h3', { className: 'font-semibold text-gray-900' }, 'Browser voice preview'), React.createElement('p', { className: 'mt-1 text-xs text-gray-500' }, 'Local playback only. Browser speech cannot be exported as an audio file.')),
@@ -1617,7 +1875,7 @@
           React.createElement('label', { htmlFor: 'voice-filename', className: 'mb-2 mt-4 block text-xs font-semibold text-gray-700' }, 'Download filename'),
           React.createElement('div', { className: 'flex items-center gap-2' }, React.createElement('input', { id: 'voice-filename', type: 'text', maxLength: 80, value: filename, onChange: (event) => setFilename(event.target.value), className: 'min-w-0 flex-1 rounded-xl border border-gray-300 bg-white px-3 py-2.5 text-sm' }), React.createElement('span', { className: 'text-sm text-gray-500' }, '.mp3')),
           React.createElement('div', { className: 'mt-4 flex flex-wrap gap-2' },
-            React.createElement('button', { type: 'button', onClick: generateAudio, disabled: isGenerating || !text.trim() || text.length > maxCharacters, className: 'rounded-xl bg-violet-600 px-5 py-3 text-sm font-semibold text-white shadow-sm hover:bg-violet-700 disabled:cursor-not-allowed disabled:opacity-50' }, isGenerating ? 'Generating MP3…' : 'Generate voice MP3'),
+            React.createElement('button', { type: 'button', onClick: generateAudio, disabled: isGenerating || isPreviewingAI || !text.trim() || text.length > maxCharacters, className: 'rounded-xl bg-violet-600 px-5 py-3 text-sm font-semibold text-white shadow-sm hover:bg-violet-700 disabled:cursor-not-allowed disabled:opacity-50' }, isGenerating ? 'Generating MP3…' : 'Generate voice MP3'),
             isGenerating && React.createElement('button', { type: 'button', onClick: () => abortControllerRef.current?.abort(), className: 'rounded-xl border border-gray-300 bg-white px-4 py-3 text-sm font-semibold' }, 'Cancel')),
           isGenerating && React.createElement('p', { className: 'mt-3 text-xs text-gray-600', role: 'status', 'aria-live': 'polite' }, 'Creating audio. This can take a little while for longer scripts.'),
           voiceError && React.createElement('p', { className: 'mt-3 text-sm text-amber-800', role: 'alert', 'aria-live': 'polite' }, voiceError),

@@ -97,7 +97,9 @@ Classic Snake Game; Tic-Tac-Toe; Memory Matching Game; Number Guessing Game; Typ
 - All 12 original tool implementations preserved.
 - Responsive redesigned dashboard, category/search discovery, descriptive task suggestions, favorites, and saved light/dark mode.
 - Full requested catalog is discoverable; unfinished tools are labeled In development and are not launchable.
-- AI Voice Artist/downloadable Text to Speech route with server-generated MP3 integration, honest configuration message, and separate browser preview.
+- AI Voice Artist/downloadable Text to Speech route with server-generated MP3 integration, honest configuration message, separate local browser speech, and same-model short AI voice previews.
+- Local Image to PDF tool for multiple PNG/JPEG images, with size/count validation and a real downloadable PDF.
+- Local JSON Formatter (pretty-print/minify/copy/download) and JSON Validator with clear syntax errors.
 - Original Snake game with keyboard/touch controls, difficulty, pause/restart, scoring, collision handling, and local high score.
 - Vite workflow, Vercel Function, provider adapter, README, `.env.example`, and tool checklist.
 
@@ -116,6 +118,6 @@ Classic Snake Game; Tic-Tac-Toe; Memory Matching Game; Number Guessing Game; Typ
 
 ## Next priorities
 1. Add a shared rate-limit/usage-control provider before broad public promotion of voice generation.
-2. Implement and test the first working PDF, developer, and image catalog tools.
+2. Expand the PDF and developer tool families, and add more image catalog utilities.
 3. Add automated regression checks for each released tool and representative responsive/accessibility tests.
 4. Continue category-by-category expansion and internationalization.
