@@ -1,13 +1,18 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {
+  cleanText,
+  correctCommonGrammar,
+  countWords,
   createSha256,
+  createUrlSlug,
   dateToTimestamps,
   decodeBase64Utf8,
   decodeHtmlEntities,
   encodeBase64Utf8,
   encodeHtml,
   generateUuids,
+  removeDuplicateLines,
   timestampToIso
 } from './developer-tool-utils.js';
 
@@ -39,6 +44,14 @@ test('UUID generator returns RFC 4122 version 4 values and validates count', () 
 
 test('SHA-256 matches the standard digest for a known input', async () => {
   assert.equal(await createSha256('abc'), 'ba7816bf8f01cfea414140de5dae2223b00361a396177a9cb410ff61f20015ad');
+});
+
+test('local text utilities correct only common surface issues and normalize text safely', () => {
+  assert.equal(correctCommonGrammar('i dont know!!  it is teh best'), "I don't know! it is the best");
+  assert.equal(removeDuplicateLines('Alpha\nalpha\nBeta\n\nBeta'), 'Alpha\nBeta');
+  assert.equal(cleanText('  hello\t world  \n\n\n next  '), 'hello world\n\nnext');
+  assert.equal(createUrlSlug(' Crème brûlée: A Guide! '), 'creme-brulee-a-guide');
+  assert.equal(countWords("Don't stop — 你好 42"), 4);
 });
 
 test('Unix timestamp conversions support seconds, milliseconds, and invalid input', () => {

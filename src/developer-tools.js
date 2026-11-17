@@ -1,11 +1,16 @@
 import {
+  cleanText,
+  correctCommonGrammar,
+  countWords,
   createSha256,
+  createUrlSlug,
   dateToTimestamps,
   decodeBase64Utf8,
   decodeHtmlEntities,
   encodeBase64Utf8,
   encodeHtml,
   generateUuids,
+  removeDuplicateLines,
   timestampToIso
 } from './developer-tool-utils.js';
 
@@ -21,7 +26,7 @@ function ToolIntro({ title, children }) {
   );
 }
 
-function TextArea({ id, label, value, onChange, placeholder, readOnly = false, rows = 6 }) {
+function TextArea({ id, label, value, onChange, placeholder, readOnly = false, rows = 6, spellCheck = false }) {
   return h('label', { className: 'block space-y-2' },
     h('span', { className: 'text-sm font-semibold text-gray-800' }, label),
     h('textarea', {
@@ -31,7 +36,7 @@ function TextArea({ id, label, value, onChange, placeholder, readOnly = false, r
       placeholder,
       readOnly,
       rows,
-      spellCheck: false,
+      spellCheck,
       className: `${fieldClass} resize-y font-mono leading-6`
     })
   );
@@ -274,5 +279,72 @@ export function UnixTimestampTool() {
       h(ToolError, { message: timestampError }),
       timestampOutput && h(OutputPanel, { label: 'Timestamp result', value: timestampOutput, rows: 2 })
     )
+  );
+}
+
+function TextToolLayout({ title, description, input, setInput, children }) {
+  return h('section', { className: 'max-w-3xl' },
+    h(ToolIntro, { title }, description),
+    h(TextArea, { id: `${title.toLowerCase().replace(/[^a-z0-9]+/g, '-')}-input`, label: 'Your text', value: input, onChange: (event) => setInput(event.target.value), placeholder: 'Type or paste text here…', spellCheck: true }),
+    children
+  );
+}
+
+export function GrammarCorrectionTool() {
+  const [input, setInput] = React.useState('');
+  const [output, setOutput] = React.useState('');
+  const [corrections, setCorrections] = React.useState(0);
+  const applyCorrections = () => {
+    const result = correctCommonGrammar(input);
+    setOutput(result.text);
+    setCorrections(result.corrections);
+  };
+
+  return h(TextToolLayout, { title: 'Grammar Correction', description: 'Fix a handful of common typos and punctuation issues locally. This lightweight rule-based checker is not a full grammar editor; your text stays in this browser.', input, setInput },
+    h('div', { className: 'mt-4 flex flex-wrap gap-2' },
+      h('button', { type: 'button', className: buttonClass, onClick: applyCorrections, disabled: !input.trim() }, 'Correct common issues'),
+      h('button', { type: 'button', className: 'rounded-xl border border-gray-200 bg-white px-4 py-2.5 text-sm font-semibold text-gray-700', onClick: () => { setInput(''); setOutput(''); setCorrections(0); } }, 'Clear')),
+    output && h('div', null,
+      h('p', { className: 'mt-4 text-sm text-gray-600', role: 'status', 'aria-live': 'polite' }, `${corrections} common ${corrections === 1 ? 'issue' : 'issues'} corrected. Please review the result; automatic rules can miss context.`),
+      h(OutputPanel, { label: 'Corrected text', value: output, rows: 8 }))
+  );
+}
+
+export function DuplicateLinesTool() {
+  const [input, setInput] = React.useState('');
+  const [output, setOutput] = React.useState('');
+  return h(TextToolLayout, { title: 'Remove Duplicate Lines', description: 'Remove repeated non-empty lines while preserving the first occurrence. Matching ignores case and repeated spaces; everything runs locally.', input, setInput },
+    h('button', { type: 'button', className: `${buttonClass} mt-4`, onClick: () => setOutput(removeDuplicateLines(input)), disabled: !input.trim() }, 'Remove duplicates'),
+    output && h(OutputPanel, { label: 'Unique lines', value: output, rows: 8 })
+  );
+}
+
+export function TextCleanerTool() {
+  const [input, setInput] = React.useState('');
+  const [output, setOutput] = React.useState('');
+  return h(TextToolLayout, { title: 'Text Cleaner', description: 'Normalize tabs and extra spaces, trim line edges, and reduce excessive blank lines without sending text anywhere.', input, setInput },
+    h('button', { type: 'button', className: `${buttonClass} mt-4`, onClick: () => setOutput(cleanText(input)), disabled: !input.trim() }, 'Clean text'),
+    output && h(OutputPanel, { label: 'Cleaned text', value: output, rows: 8 })
+  );
+}
+
+export function ReadingTimeTool() {
+  const [input, setInput] = React.useState('');
+  const words = countWords(input);
+  const minutes = words ? Math.max(1, Math.ceil(words / 225)) : 0;
+  return h(TextToolLayout, { title: 'Reading Time Calculator', description: 'Estimate reading time at an adjustable words-per-minute pace. Your text is counted locally and never uploaded.', input, setInput },
+    h('div', { className: 'mt-5 grid gap-3 sm:grid-cols-2', 'aria-live': 'polite' },
+      h('div', { className: 'rounded-2xl border border-gray-200 bg-gray-50 p-5' }, h('p', { className: 'text-sm text-gray-500' }, 'Word count'), h('p', { className: 'mt-1 text-3xl font-bold text-gray-900' }, words.toLocaleString())),
+      h('div', { className: 'rounded-2xl border border-gray-200 bg-gray-50 p-5' }, h('p', { className: 'text-sm text-gray-500' }, 'Estimated reading time · 225 wpm'), h('p', { className: 'mt-1 text-3xl font-bold text-gray-900' }, minutes ? `${minutes} min` : '—')))
+  );
+}
+
+export function UrlSlugTool() {
+  const [input, setInput] = React.useState('');
+  const output = createUrlSlug(input);
+  return h('section', { className: 'max-w-3xl' },
+    h(ToolIntro, { title: 'URL Slug Generator' }, 'Turn a page title into a clean, lowercase, hyphen-separated URL slug. Conversion happens in your browser.'),
+    h('label', { className: 'block space-y-2' }, h('span', { className: 'text-sm font-semibold text-gray-800' }, 'Page title'), h('input', { value: input, onChange: (event) => setInput(event.target.value), className: fieldClass, placeholder: 'e.g. A Guide to Better Writing' })),
+    output && h(OutputPanel, { label: 'URL slug', value: output, rows: 2 })
   );
 }
