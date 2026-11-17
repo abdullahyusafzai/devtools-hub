@@ -3,7 +3,9 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>DevTools Hub</title>
+  <meta name="theme-color" content="#f7f7f5">
+  <meta name="description" content="A thoughtfully organized toolkit for everyday digital tasks. Fast, free browser-based utilities for text, images, and more.">
+  <title>DevTools Hub — Tools for your everyday workflow</title>
   <!-- Load React and ReactDOM from CDN -->
   <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
   <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
@@ -24,9 +26,16 @@
     };
   </script>
   <style>
-    body {
-      font-family: 'Inter', sans-serif;
-    }
+    body { font-family: 'Inter', sans-serif; background: #f7f7f5; }
+    * { box-sizing: border-box; }
+    button, input { font: inherit; }
+    button:focus-visible, input:focus-visible { outline: 3px solid rgba(16, 163, 127, .28); outline-offset: 3px; }
+    .tool-card { min-height: 154px; border: 1px solid #e9e9e6; box-shadow: 0 1px 2px rgba(16,24,40,.03); }
+    .tool-card:hover { transform: translateY(-3px); border-color: #d5e6df; box-shadow: 0 12px 28px rgba(24,44,36,.08); }
+    .tool-icon { background: #f1f5f2; color: #52665e; }
+    .tool-card:hover .tool-icon { background: #e5f4ed; color: #087f5b; }
+    .category-chip { transition: background .18s ease, color .18s ease, border-color .18s ease; }
+    @media (prefers-reduced-motion: reduce) { *, *::before, *::after { scroll-behavior: auto !important; transition-duration: .01ms !important; } }
   </style>
 </head>
 <body>
@@ -123,31 +132,32 @@
 
       return React.createElement(
         'div',
-        { className: "min-h-screen bg-gray-100 p-4 font-sans text-gray-800 antialiased" },
+        { className: "min-h-screen bg-[#f7f7f5] font-sans text-[#242824] antialiased" },
         React.createElement(
           'header',
-          { className: "mx-auto mb-8 max-w-6xl rounded-xl bg-white p-6 shadow-md" },
+          { className: "sticky top-0 z-10 border-b border-[#e9e9e6] bg-[#f7f7f5]/90 backdrop-blur-md" },
           React.createElement(
-            'h1',
-            { className: "text-center text-3xl font-bold text-indigo-700 sm:text-4xl" },
-            'DevTools Hub'
-          ),
-          React.createElement(
-            'p',
-            { className: "mt-2 text-center text-gray-600" },
-            'Your free one-stop platform for daily digital tools.'
+            'div',
+            { className: "mx-auto flex max-w-7xl items-center justify-between px-5 py-4 sm:px-8" },
+            React.createElement(
+              'button',
+              { onClick: () => setCurrentPage('home'), className: "flex items-center gap-3 rounded-xl text-left", 'aria-label': 'DevTools Hub home' },
+              React.createElement('span', { className: "flex h-9 w-9 items-center justify-center rounded-xl bg-[#10a37f] text-sm font-bold text-white" }, 'D'),
+              React.createElement('span', { className: "text-[15px] font-semibold tracking-tight" }, 'devtools', React.createElement('span', { className: "text-[#8b918c]" }, '.hub'))
+            ),
+            React.createElement('span', { className: "hidden items-center gap-2 text-xs font-medium text-[#747b76] sm:flex" }, React.createElement('span', { className: "h-2 w-2 rounded-full bg-[#10a37f]" }), 'Free browser tools')
           )
         ),
         React.createElement(AdSenseAd, { slot: "ca-pub-5058994010586674" }),
         React.createElement(
           'main',
-          { className: "mx-auto max-w-6xl" },
+          { className: "mx-auto max-w-7xl px-5 py-10 sm:px-8 sm:py-14" },
           renderTool()
         ),
         React.createElement(AdSenseAd, { slot: "ca-pub-5058994010586674" }),
         React.createElement(
           'footer',
-          { className: "mx-auto mt-8 max-w-6xl rounded-xl bg-white p-4 text-center text-gray-600 shadow-md" },
+          { className: "mx-auto max-w-7xl border-t border-[#e9e9e6] px-5 py-7 text-center text-sm text-[#858b86] sm:px-8" },
           '© ', new Date().getFullYear(), ' DevTools Hub. All rights reserved.'
         )
       );
@@ -156,40 +166,45 @@
     // Reusable component for displaying tool cards on the home page
     const ToolCard = ({ id, name, svg, onClick }) => {
       const svgHtml = { __html: svg };
+      const category = id.includes('image') ? 'Image' : ['case-converter', 'word-character-counter', 'dummy-text-generator', 'text-to-speech'].includes(id) ? 'Text' : 'Utilities';
+      const description = ({ 'qr-code-generator': 'Create a scannable code from text or a link.', 'case-converter': 'Switch between uppercase, lowercase, and more.', 'word-character-counter': 'Get an instant count of words and characters.', 'dummy-text-generator': 'Generate placeholder copy for your next project.', 'password-generator': 'Create a strong password in a click.', 'url-encoder-decoder': 'Encode or decode URL-safe text.', 'temperature-converter': 'Convert temperatures between common scales.', 'image-converter': 'Convert images to a different file format.', 'image-resizer': 'Resize an image to fit your needs.', 'image-compressor': 'Make image files lighter and easier to share.', 'image-cropper': 'Crop an image to the composition you want.', 'text-to-speech': 'Listen to written text with speech synthesis.' })[id] || 'A handy tool for your everyday workflow.';
       return React.createElement(
         'button',
-        {
-          onClick: () => onClick(id),
-          className: "group flex flex-col items-center rounded-xl bg-white p-6 text-center shadow-lg transition-transform duration-200 hover:scale-105 hover:shadow-xl focus:outline-none focus:ring-4 focus:ring-indigo-500 focus:ring-opacity-50"
-        },
-        React.createElement(
-          'div',
-          { className: "flex h-16 w-16 items-center justify-center rounded-full bg-indigo-50 text-indigo-600 transition-colors duration-200 group-hover:bg-indigo-100 group-hover:text-indigo-700" },
-          React.createElement('div', { className: "h-10 w-10", dangerouslySetInnerHTML: svgHtml })
+        { onClick: () => onClick(id), className: "tool-card group flex flex-col items-start rounded-2xl bg-white p-5 text-left transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-[#10a37f]", 'aria-label': `${name}. ${description}` },
+        React.createElement('div', { className: "tool-icon flex h-11 w-11 items-center justify-center rounded-xl transition-colors", 'aria-hidden': 'true' },
+          React.createElement('div', { className: "h-6 w-6", dangerouslySetInnerHTML: svgHtml })
         ),
-        React.createElement(
-          'h3',
-          { className: "mt-4 text-lg font-semibold text-gray-800" },
-          name
-        )
+        React.createElement('h3', { className: "mt-4 text-[15px] font-semibold tracking-tight text-[#252a26]" }, name),
+        React.createElement('p', { className: "mt-1.5 text-left text-[13px] leading-5 text-[#818782]" }, description)
       );
     };
 
     // Home Page Component
     const HomePage = ({ setCurrentPage }) => {
+      const [query, setQuery] = React.useState('');
+      const [category, setCategory] = React.useState('All tools');
+      const categories = ['All tools', 'Text', 'Image', 'Utilities'];
+      const categoryFor = id => id.includes('image') ? 'Image' : ['case-converter', 'word-character-counter', 'dummy-text-generator', 'text-to-speech'].includes(id) ? 'Text' : 'Utilities';
+      const visibleTools = tools.filter(tool => {
+        const matchesQuery = `${tool.name} ${categoryFor(tool.id)}`.toLowerCase().includes(query.trim().toLowerCase());
+        return matchesQuery && (category === 'All tools' || categoryFor(tool.id) === category);
+      });
       return React.createElement(
-        'div',
-        { className: "grid grid-cols-2 gap-6 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5" },
-        tools.map(tool => React.createElement(
-          ToolCard,
-          {
-            key: tool.id,
-            id: tool.id,
-            name: tool.name,
-            svg: tool.svg,
-            onClick: setCurrentPage
-          }
-        ))
+        'section', { 'aria-labelledby': 'welcome-heading' },
+        React.createElement('div', { className: "mx-auto mb-10 max-w-3xl text-center" },
+          React.createElement('p', { className: "mb-4 text-xs font-semibold uppercase tracking-[.18em] text-[#10a37f]" }, 'A little more focus, a lot less busywork'),
+          React.createElement('h1', { id: 'welcome-heading', className: "text-4xl font-semibold tracking-[-.045em] text-[#202522] sm:text-5xl" }, 'The right tool, right here.'),
+          React.createElement('p', { className: "mx-auto mt-4 max-w-xl text-base leading-7 text-[#777e78]" }, 'Simple, useful utilities for the small tasks that keep your day moving.'),
+          React.createElement('div', { className: "relative mx-auto mt-7 max-w-xl" },
+            React.createElement('svg', { className: "absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-[#909791]", viewBox: '0 0 24 24', fill: 'none', stroke: 'currentColor', 'aria-hidden': 'true' }, React.createElement('circle', { cx: '11', cy: '11', r: '7', strokeWidth: '1.8' }), React.createElement('path', { d: 'm16 16 4 4', strokeWidth: '1.8', strokeLinecap: 'round' })),
+            React.createElement('input', { type: 'search', value: query, onChange: event => setQuery(event.target.value), placeholder: 'Find a tool…', 'aria-label': 'Search tools', className: "w-full rounded-2xl border border-[#e5e7e3] bg-white py-4 pl-12 pr-4 text-sm shadow-[0_3px_10px_rgba(0,0,0,.025)] placeholder:text-[#a0a6a1] focus:border-[#10a37f] focus:outline-none" })
+          )
+        ),
+        React.createElement('div', { className: "mb-5 flex flex-wrap items-center justify-between gap-4" },
+          React.createElement('div', { className: "flex flex-wrap gap-2", role: 'group', 'aria-label': 'Filter tools by category' }, categories.map(item => React.createElement('button', { key: item, type: 'button', onClick: () => setCategory(item), 'aria-pressed': category === item, className: `category-chip rounded-full border px-4 py-2 text-xs font-medium ${category === item ? 'border-[#242a26] bg-[#242a26] text-white' : 'border-[#e5e7e3] bg-white text-[#68716a] hover:border-[#c7d0ca]'}` }, item))),
+          React.createElement('p', { className: "text-xs text-[#8b918c]", 'aria-live': 'polite' }, `${visibleTools.length} ${visibleTools.length === 1 ? 'tool' : 'tools'}`)
+        ),
+        visibleTools.length ? React.createElement('div', { className: "grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4" }, visibleTools.map(tool => React.createElement(ToolCard, { key: tool.id, id: tool.id, name: tool.name, svg: tool.svg, onClick: setCurrentPage }))) : React.createElement('div', { className: "rounded-2xl border border-dashed border-[#dfe3df] bg-white px-6 py-16 text-center" }, React.createElement('p', { className: "font-medium text-[#3b423d]" }, 'No tools found'), React.createElement('p', { className: "mt-2 text-sm text-[#858c86]" }, 'Try another search or choose a different category.'))
       );
     };
 
