@@ -9,6 +9,7 @@
   <!-- Load React and ReactDOM from CDN -->
   <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
   <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js" defer></script>
   <!-- Load Tailwind CSS from CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
   <!-- Load Google AdSense script -->
@@ -62,6 +63,52 @@
       { id: 'image-cropper', name: 'Simple Image Cropper', svg: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M17 19H5a2 2 0 0 1-2-2V5h2v12h12v2zm-2-4V3h2v12h-2zm-2 0V3h2v12h-2zM9 13v-2H7v-2h2V7h2v2h2v2h-2v2h2v2h-2v-2h-2z"/></svg>` },
       { id: 'text-to-speech', name: 'Text to Speech', svg: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2a10 10 0 1 0 10 10A10 10 0 0 0 12 2zm-2 15a1 1 0 0 1-1-1V8a1 1 0 0 1 2 0v8a1 1 0 0 1-1 1zm4 0a1 1 0 0 1-1-1V8a1 1 0 0 1 2 0v8a1 1 0 0 1-1 1z"/></svg>` },
     ];
+
+    const copyTextToClipboard = async (value) => {
+      if (!value) return false;
+      if (navigator.clipboard && window.isSecureContext) {
+        try {
+          await navigator.clipboard.writeText(value);
+          return true;
+        } catch (error) {}
+      }
+      let field;
+      try {
+        field = document.createElement('textarea');
+        field.value = value;
+        field.setAttribute('readonly', '');
+        field.style.position = 'fixed';
+        field.style.opacity = '0';
+        document.body.appendChild(field);
+        field.select();
+        return document.execCommand('copy');
+      } catch (error) {
+        return false;
+      } finally {
+        field?.remove();
+      }
+    };
+
+    const downloadCanvas = (canvas, filename, format = 'image/png', quality) => {
+      if (!canvas || !canvas.width || !canvas.height) return Promise.resolve(false);
+      return new Promise(resolve => {
+        try {
+          canvas.toBlob(blob => {
+            if (!blob) { resolve(false); return; }
+            const extension = blob.type === 'image/jpeg' ? 'jpg' : (blob.type.split('/')[1] || 'png');
+            const link = document.createElement('a');
+            const objectUrl = URL.createObjectURL(blob);
+            link.download = `${filename.replace(/\.[^.]+$/, '')}.${extension}`;
+            link.href = objectUrl;
+            link.click();
+            window.setTimeout(() => URL.revokeObjectURL(objectUrl), 1000);
+            resolve(true);
+          }, format, quality);
+        } catch (error) {
+          resolve(false);
+        }
+      });
+    };
 
     // Reusable AdSenseAd component
     const AdSenseAd = ({ slot, client = "ca-pub-5058994010586674" }) => {
@@ -233,80 +280,87 @@
 
     // QR Code Generator Component
     const QRCodeGenerator = () => {
-      const [url, setUrl] = React.useState('');
-      const [showQR, setShowQR] = React.useState(false);
-      const canvasRef = React.useRef(null);
+      const [value, setValue] = React.useState('');
+      const [generatedValue, setGeneratedValue] = React.useState('');
+      const [generationAttempt, setGenerationAttempt] = React.useState(0);
+      const [error, setError] = React.useState('');
+      const qrRef = React.useRef(null);
 
       React.useEffect(() => {
-        if (showQR && url.trim() !== '' && canvasRef.current) {
-          const canvas = canvasRef.current;
-          const ctx = canvas.getContext('2d');
-          ctx.clearRect(0, 0, canvas.width, canvas.height);
-          ctx.fillStyle = '#000000';
-          const size = 25;
-          for (let i = 0; i < size; i++) {
-            for (let j = 0; j < size; j++) {
-              if (Math.random() > 0.5) {
-                ctx.fillRect(j * 10, i * 10, 10, 10);
-              }
-            }
-          }
+        if (!generatedValue || !qrRef.current) return;
+        qrRef.current.replaceChildren();
+        if (!window.QRCode) {
+          setError('QR generation is unavailable. Check your connection and try again.');
+          return;
         }
-      }, [showQR, url]);
+        try {
+          new window.QRCode(qrRef.current, {
+            text: generatedValue,
+            width: 256,
+            height: 256,
+            colorDark: '#111827',
+            colorLight: '#ffffff',
+            correctLevel: window.QRCode.CorrectLevel.M
+          });
+          setError('');
+        } catch (generationError) {
+          setGeneratedValue('');
+          setError('This content is too long to fit in a QR code. Try a shorter link or message.');
+        }
+      }, [generatedValue, generationAttempt]);
 
       const generateQRCode = () => {
-        if (url.trim() !== '') {
-          setShowQR(true);
-        } else {
-          setShowQR(false);
+        const trimmedValue = value.trim();
+        if (!trimmedValue) {
+          setGeneratedValue('');
+          setError('Enter a link or text to create a QR code.');
+          return;
+        }
+        if (trimmedValue.length > 2000) {
+          setError('Keep the content under 2,000 characters for a reliable QR code.');
+          return;
+        }
+        setError('');
+        setGeneratedValue(trimmedValue);
+        setGenerationAttempt(attempt => attempt + 1);
+      };
+
+      const downloadQRCode = () => {
+        const canvas = qrRef.current?.querySelector('canvas');
+        if (canvas) {
+          downloadCanvas(canvas, 'qr-code.png');
+          return;
+        }
+        const image = qrRef.current?.querySelector('img');
+        if (image?.src) {
+          const link = document.createElement('a');
+          link.download = 'qr-code.png';
+          link.href = image.src;
+          link.click();
         }
       };
 
       const clearInput = () => {
-        setUrl('');
-        setShowQR(false);
+        setValue('');
+        setGeneratedValue('');
+        setError('');
+        if (qrRef.current) qrRef.current.replaceChildren();
       };
 
       return React.createElement(
-        'div',
-        { className: "flex flex-col items-center" },
-        React.createElement('h2', { className: "mb-4 text-2xl font-semibold" }, 'QR Code Generator'),
-        React.createElement('p', { className: "mb-4 text-gray-500" }, 'Enter text or a URL to generate a custom QR code.'),
-        React.createElement(
-          'div',
-          { className: "w-full" },
-          React.createElement('input', {
-            type: "text",
-            value: url,
-            onChange: e => setUrl(e.target.value),
-            placeholder: "Enter text or URL here",
-            className: "mb-4 w-full rounded-md border-2 border-gray-300 p-3 shadow-sm focus:border-indigo-500 focus:outline-none focus:ring focus:ring-indigo-200"
-          }),
-          React.createElement(
-            'div',
-            { className: "flex w-full space-x-2" },
-            React.createElement(
-              'button',
-              {
-                onClick: generateQRCode,
-                className: "flex-1 rounded-md bg-indigo-600 px-4 py-3 font-semibold text-white transition-colors duration-200 hover:bg-indigo-700 focus:outline-none focus:ring focus:ring-indigo-500"
-              },
-              'Generate QR Code'
-            ),
-            React.createElement(
-              'button',
-              {
-                onClick: clearInput,
-                className: "flex-1 rounded-md border border-gray-300 bg-white px-4 py-3 font-semibold text-gray-700 transition-colors duration-200 hover:bg-gray-100 focus:outline-none focus:ring focus:ring-gray-300"
-              },
-              'Clear'
-            )
-          )
+        'div', { className: "mx-auto flex max-w-2xl flex-col items-center" },
+        React.createElement('h2', { className: "mb-2 text-2xl font-semibold" }, 'QR Code Generator'),
+        React.createElement('p', { className: "mb-5 text-center text-gray-500" }, 'Create a scannable code for a link or any short message. Your content stays in this browser.'),
+        React.createElement('label', { htmlFor: 'qr-content', className: "mb-2 w-full text-sm font-medium text-gray-700" }, 'Link or text'),
+        React.createElement('textarea', { id: 'qr-content', value, onChange: event => setValue(event.target.value), onKeyDown: event => { if (event.key === 'Enter' && !event.shiftKey && !event.nativeEvent.isComposing && event.keyCode !== 229) { event.preventDefault(); generateQRCode(); } }, placeholder: 'https://example.com', maxLength: 2000, className: "mb-3 min-h-24 w-full resize-y rounded-xl border border-gray-300 p-3 focus:border-emerald-600 focus:outline-none focus:ring-2 focus:ring-emerald-100" }),
+        React.createElement('div', { className: "mb-3 flex w-full gap-2" },
+          React.createElement('button', { onClick: generateQRCode, className: "flex-1 rounded-xl bg-emerald-700 px-4 py-3 font-semibold text-white hover:bg-emerald-800" }, 'Generate QR Code'),
+          React.createElement('button', { onClick: clearInput, className: "rounded-xl border border-gray-300 bg-white px-5 py-3 font-semibold text-gray-700 hover:bg-gray-50" }, 'Clear')
         ),
-        showQR && React.createElement(
-          'div',
-          { className: "mt-8 rounded-lg bg-gray-50 p-6 shadow-md" },
-          React.createElement('canvas', { ref: canvasRef, width: "256", height: "256", className: "bg-white" })
+        error && React.createElement('p', { role: 'alert', className: "w-full text-sm text-red-700" }, error),
+        generatedValue && React.createElement('div', { className: "mt-5 flex flex-col items-center gap-4 rounded-2xl border border-gray-200 bg-gray-50 p-6" },
+          React.createElement('div', { ref: qrRef, className: "min-h-64 min-w-64 bg-white p-2", role: 'img', 'aria-label': 'Generated QR code' }),
+          React.createElement('button', { onClick: downloadQRCode, className: "rounded-xl bg-gray-900 px-5 py-3 font-semibold text-white hover:bg-gray-700" }, 'Download PNG')
         )
       );
     };
@@ -341,7 +395,7 @@
           case 'sentencecase':
             convertedText = inputText
               .toLowerCase()
-              .replace(/(^\s*\w|[.?!]\s*\w)/g, (c) => c.toUpperCase());
+              .replace(/(^\s*[^\p{L}\p{N}]*[\p{L}\p{N}]|[.?!]\s*[^\p{L}\p{N}]*[\p{L}\p{N}])/gu, (c) => c.toLocaleUpperCase());
             break;
           default:
             convertedText = inputText;
@@ -349,22 +403,10 @@
         setOutputText(convertedText);
       };
 
-      const handleCopy = () => {
-        if (document.execCommand) {
-          const textArea = document.createElement('textarea');
-          textArea.value = outputText;
-          document.body.appendChild(textArea);
-          textArea.focus();
-          textArea.select();
-          try {
-            document.execCommand('copy');
-            setIsCopied(true);
-            setTimeout(() => setIsCopied(false), 2000);
-          } catch (err) {
-            console.error('Fallback: Could not copy text: ', err);
-          }
-          document.body.removeChild(textArea);
-        }
+      const handleCopy = async () => {
+        const copied = await copyTextToClipboard(outputText);
+        setIsCopied(copied);
+        window.setTimeout(() => setIsCopied(false), 2000);
       };
 
       return React.createElement(
@@ -447,8 +489,12 @@
     // Word and Character Counter Component
     const WordCharacterCounter = () => {
       const [text, setText] = React.useState('');
-      const wordCount = text.split(/\s+/).filter(Boolean).length;
-      const charCount = text.length;
+      const wordCount = typeof Intl.Segmenter === 'function'
+        ? Array.from(new Intl.Segmenter(undefined, { granularity: 'word' }).segment(text)).filter(segment => segment.isWordLike).length
+        : text.trim().split(/\s+/u).filter(Boolean).length;
+      const charCount = typeof Intl.Segmenter === 'function'
+        ? Array.from(new Intl.Segmenter(undefined, { granularity: 'grapheme' }).segment(text)).length
+        : Array.from(text).length;
 
       return React.createElement(
         'div',
@@ -502,7 +548,7 @@
             id: "paragraph-count",
             type: "number",
             value: paragraphCount,
-            onChange: e => setParagraphCount(Math.max(1, parseInt(e.target.value) || 1)),
+            onChange: e => setParagraphCount(Math.min(10, Math.max(1, parseInt(e.target.value, 10) || 1))),
             min: "1",
             max: "10",
             className: "w-20 rounded-md border-2 border-gray-300 p-2 shadow-sm focus:border-indigo-500 focus:outline-none focus:ring focus:ring-indigo-200"
@@ -537,45 +583,53 @@
       const [includeNumbers, setIncludeNumbers] = React.useState(true);
       const [includeSymbols, setIncludeSymbols] = React.useState(true);
       const [password, setPassword] = React.useState('');
+      const [copyStatus, setCopyStatus] = React.useState('');
 
       const generatePassword = () => {
-        let charset = '';
-        let newPassword = '';
-        if (includeUppercase) charset += 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
-        if (includeLowercase) charset += 'abcdefghijklmnopqrstuvwxyz';
-        if (includeNumbers) charset += '0123456789';
-        if (includeSymbols) charset += '!@#$%^&*()_+~`|}{[]:;?><,./-=';
-
-        if (charset === '') {
-          setPassword('Please select at least one option.');
+        const groups = [
+          includeUppercase ? 'ABCDEFGHIJKLMNOPQRSTUVWXYZ' : '',
+          includeLowercase ? 'abcdefghijklmnopqrstuvwxyz' : '',
+          includeNumbers ? '0123456789' : '',
+          includeSymbols ? '!@#$%^&*()_+~`|}{[]:;?><,./-=' : ''
+        ].filter(Boolean);
+        if (!groups.length) {
+          setPassword('');
+          setCopyStatus('Select at least one character set.');
           return;
         }
-
-        for (let i = 0; i < length; i++) {
-          newPassword += charset.charAt(Math.floor(Math.random() * charset.length));
+        if (!window.crypto?.getRandomValues) {
+          setPassword('');
+          setCopyStatus('Secure password generation is not supported in this browser.');
+          return;
         }
-        setPassword(newPassword);
+        const randomIndex = max => {
+          const range = 0x100000000;
+          const limit = Math.floor(range / max) * max;
+          const value = new Uint32Array(1);
+          do { window.crypto.getRandomValues(value); } while (value[0] >= limit);
+          return value[0] % max;
+        };
+        const allCharacters = groups.join('');
+        const characters = groups.map(group => group[randomIndex(group.length)]);
+        while (characters.length < Math.min(32, Math.max(8, Number(length) || 8))) {
+          characters.push(allCharacters[randomIndex(allCharacters.length)]);
+        }
+        for (let index = characters.length - 1; index > 0; index--) {
+          const swapIndex = randomIndex(index + 1);
+          [characters[index], characters[swapIndex]] = [characters[swapIndex], characters[index]];
+        }
+        setPassword(characters.join(''));
+        setCopyStatus('');
       };
 
       React.useEffect(() => {
         generatePassword();
       }, [length, includeUppercase, includeLowercase, includeNumbers, includeSymbols]);
 
-      const handleCopy = () => {
-        if (document.execCommand) {
-          const textArea = document.createElement('textarea');
-          textArea.value = password;
-          document.body.appendChild(textArea);
-          textArea.focus();
-          textArea.select();
-          try {
-            document.execCommand('copy');
-            console.log('Password copied!');
-          } catch (err) {
-            console.error('Fallback: Could not copy text: ', err);
-          }
-          document.body.removeChild(textArea);
-        }
+      const handleCopy = async () => {
+        if (!password) return;
+        const copied = await copyTextToClipboard(password);
+        setCopyStatus(copied ? 'Password copied.' : 'Could not copy. Select and copy it manually.');
       };
 
       return React.createElement(
@@ -658,11 +712,13 @@
             'button',
             {
               onClick: handleCopy,
-              className: "absolute right-2 top-2 rounded-md bg-white p-2 text-sm text-gray-700 shadow-sm transition-colors duration-200 hover:bg-gray-100"
+              disabled: !password,
+              className: "absolute right-2 top-2 rounded-md bg-white p-2 text-sm text-gray-700 shadow-sm transition-colors duration-200 hover:bg-gray-100 disabled:opacity-50"
             },
             'Copy'
           )
         ),
+        copyStatus && React.createElement('p', { className: "mb-3 text-sm text-gray-600", 'aria-live': 'polite' }, copyStatus),
         React.createElement(
           'button',
           {
@@ -692,22 +748,10 @@
         }
       };
 
-      const handleCopy = () => {
-        if (document.execCommand) {
-          const textArea = document.createElement('textarea');
-          textArea.value = outputText;
-          document.body.appendChild(textArea);
-          textArea.focus();
-          textArea.select();
-          try {
-            document.execCommand('copy');
-            setIsCopied(true);
-            setTimeout(() => setIsCopied(false), 2000);
-          } catch (err) {
-            console.error('Fallback: Could not copy text: ', err);
-          }
-          document.body.removeChild(textArea);
-        }
+      const handleCopy = async () => {
+        const copied = await copyTextToClipboard(outputText);
+        setIsCopied(copied);
+        window.setTimeout(() => setIsCopied(false), 2000);
       };
 
       return React.createElement(
@@ -779,20 +823,22 @@
       const handleCelsiusChange = (e) => {
         const value = e.target.value;
         setCelsius(value);
+        const numericValue = Number(value);
         if (value === '') {
           setFahrenheit('');
-        } else {
-          setFahrenheit(((parseFloat(value) * 9) / 5 + 32).toFixed(2));
+        } else if (Number.isFinite(numericValue)) {
+          setFahrenheit(((numericValue * 9) / 5 + 32).toFixed(2));
         }
       };
 
       const handleFahrenheitChange = (e) => {
         const value = e.target.value;
         setFahrenheit(value);
+        const numericValue = Number(value);
         if (value === '') {
           setCelsius('');
-        } else {
-          setCelsius(((parseFloat(value) - 32) * 5 / 9).toFixed(2));
+        } else if (Number.isFinite(numericValue)) {
+          setCelsius(((numericValue - 32) * 5 / 9).toFixed(2));
         }
       };
 
@@ -836,6 +882,10 @@
       const [outputFormat, setOutputFormat] = React.useState('image/png');
       const [previewUrl, setPreviewUrl] = React.useState('');
 
+      React.useEffect(() => () => {
+        if (previewUrl.startsWith('blob:')) URL.revokeObjectURL(previewUrl);
+      }, [previewUrl]);
+
       const handleFileChange = (e) => {
         const file = e.target.files[0];
         if (file) {
@@ -850,18 +900,20 @@
         const reader = new FileReader();
         reader.onload = (e) => {
           const img = new Image();
+          img.crossOrigin = 'anonymous';
           img.onload = () => {
             const canvas = document.createElement('canvas');
-            canvas.width = img.width;
-            canvas.height = img.height;
+            canvas.width = img.naturalWidth;
+            canvas.height = img.naturalHeight;
             const ctx = canvas.getContext('2d');
+            if (outputFormat === 'image/jpeg') {
+              ctx.fillStyle = '#ffffff';
+              ctx.fillRect(0, 0, canvas.width, canvas.height);
+            }
             ctx.drawImage(img, 0, 0);
-
-            const link = document.createElement('a');
-            link.download = `converted-image.${outputFormat.split('/')[1]}`;
-            link.href = canvas.toDataURL(outputFormat);
-            link.click();
+            downloadCanvas(canvas, 'converted-image', outputFormat);
           };
+          img.onerror = () => setPreviewUrl('');
           img.src = e.target.result;
         };
         reader.readAsDataURL(imageFile);
@@ -931,6 +983,7 @@
       const [width, setWidth] = React.useState('');
       const [height, setHeight] = React.useState('');
       const [aspectRatioLocked, setAspectRatioLocked] = React.useState(true);
+      const [resizeError, setResizeError] = React.useState('');
       const originalDimensions = React.useRef({ width: 0, height: 0 });
 
       const handleFileChange = (e) => {
@@ -940,6 +993,7 @@
           const reader = new FileReader();
           reader.onload = (event) => {
             const img = new Image();
+          img.crossOrigin = 'anonymous';
             img.onload = () => {
               originalDimensions.current = { width: img.width, height: img.height };
               setWidth(img.width);
@@ -953,40 +1007,44 @@
       };
 
       const handleWidthChange = (e) => {
-        const newWidth = parseInt(e.target.value, 10);
-        setWidth(newWidth);
-        if (aspectRatioLocked) {
-          const newHeight = Math.round(newWidth * (originalDimensions.current.height / originalDimensions.current.width));
-          setHeight(newHeight);
+        const value = e.target.value;
+        setWidth(value);
+        const newWidth = Number(value);
+        if (value && Number.isFinite(newWidth) && aspectRatioLocked && originalDimensions.current.width) {
+          setHeight(Math.round(newWidth * (originalDimensions.current.height / originalDimensions.current.width)));
         }
       };
 
       const handleHeightChange = (e) => {
-        const newHeight = parseInt(e.target.value, 10);
-        setHeight(newHeight);
-        if (aspectRatioLocked) {
-          const newWidth = Math.round(newHeight * (originalDimensions.current.width / originalDimensions.current.height));
-          setWidth(newWidth);
+        const value = e.target.value;
+        setHeight(value);
+        const newHeight = Number(value);
+        if (value && Number.isFinite(newHeight) && aspectRatioLocked && originalDimensions.current.height) {
+          setWidth(Math.round(newHeight * (originalDimensions.current.width / originalDimensions.current.height)));
         }
       };
 
       const resizeImage = () => {
-        if (!imageFile || !width || !height) return;
-
+        const outputWidth = Number(width);
+        const outputHeight = Number(height);
+        if (!imageFile) return;
+        if (!Number.isInteger(outputWidth) || !Number.isInteger(outputHeight) || outputWidth < 1 || outputHeight < 1 || outputWidth > 8192 || outputHeight > 8192 || outputWidth * outputHeight > 16000000) {
+          setResizeError('Choose valid dimensions up to 8,192 px per side and 16 megapixels total.');
+          return;
+        }
+        setResizeError('');
         const reader = new FileReader();
         reader.onload = (e) => {
           const img = new Image();
+          img.crossOrigin = 'anonymous';
           img.onload = () => {
             const canvas = document.createElement('canvas');
-            canvas.width = width;
-            canvas.height = height;
+            canvas.width = outputWidth;
+            canvas.height = outputHeight;
             const ctx = canvas.getContext('2d');
-            ctx.drawImage(img, 0, 0, width, height);
-
-            const link = document.createElement('a');
-            link.download = `resized-image.png`;
-            link.href = canvas.toDataURL('image/png');
-            link.click();
+            if (!ctx) return;
+            ctx.drawImage(img, 0, 0, outputWidth, outputHeight);
+            downloadCanvas(canvas, 'resized-image', 'image/png');
           };
           img.src = e.target.result;
         };
@@ -1022,9 +1080,12 @@
               React.createElement(
                 'div',
                 { className: "flex-1" },
-                React.createElement('label', { className: "block text-sm font-medium text-gray-700" }, 'Width'),
+                React.createElement('label', { htmlFor: "resize-width", className: "block text-sm font-medium text-gray-700" }, 'Width'),
                 React.createElement('input', {
+                  id: "resize-width",
                   type: "number",
+                  min: "1",
+                  max: "8192",
                   value: width,
                   onChange: handleWidthChange,
                   className: "mt-1 w-full rounded-md border-2 border-gray-300 p-2 shadow-sm focus:border-indigo-500 focus:outline-none focus:ring focus:ring-indigo-200"
@@ -1033,9 +1094,12 @@
               React.createElement(
                 'div',
                 { className: "flex-1" },
-                React.createElement('label', { className: "block text-sm font-medium text-gray-700" }, 'Height'),
+                React.createElement('label', { htmlFor: "resize-height", className: "block text-sm font-medium text-gray-700" }, 'Height'),
                 React.createElement('input', {
+                  id: "resize-height",
                   type: "number",
+                  min: "1",
+                  max: "8192",
                   value: height,
                   onChange: handleHeightChange,
                   className: "mt-1 w-full rounded-md border-2 border-gray-300 p-2 shadow-sm focus:border-indigo-500 focus:outline-none focus:ring focus:ring-indigo-200"
@@ -1064,6 +1128,7 @@
               React.createElement('img', { src: previewUrl, alt: "Preview", className: "max-w-full h-auto" })
             )
           ),
+          resizeError && React.createElement('p', { role: 'alert', className: "mb-3 text-sm text-red-700" }, resizeError),
           React.createElement(
             'button',
             {
@@ -1082,6 +1147,10 @@
       const [previewUrl, setPreviewUrl] = React.useState('');
       const [quality, setQuality] = React.useState(70);
 
+      React.useEffect(() => () => {
+        if (previewUrl.startsWith('blob:')) URL.revokeObjectURL(previewUrl);
+      }, [previewUrl]);
+
       const handleFileChange = (e) => {
         const file = e.target.files[0];
         if (file) {
@@ -1096,17 +1165,17 @@
         const reader = new FileReader();
         reader.onload = (e) => {
           const img = new Image();
+          img.crossOrigin = 'anonymous';
           img.onload = () => {
             const canvas = document.createElement('canvas');
-            canvas.width = img.width;
-            canvas.height = img.height;
+            canvas.width = img.naturalWidth;
+            canvas.height = img.naturalHeight;
             const ctx = canvas.getContext('2d');
+            if (!ctx) return;
+            ctx.fillStyle = '#ffffff';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
             ctx.drawImage(img, 0, 0);
-
-            const link = document.createElement('a');
-            link.download = `compressed-image.jpeg`;
-            link.href = canvas.toDataURL('image/jpeg', quality / 100);
-            link.click();
+            downloadCanvas(canvas, 'compressed-image', 'image/jpeg', quality / 100);
           };
           img.src = e.target.result;
         };
@@ -1175,8 +1244,11 @@
       const [isCropping, setIsCropping] = React.useState(false);
       const [cropRect, setCropRect] = React.useState({ x: 0, y: 0, width: 0, height: 0 });
       const [startPoint, setStartPoint] = React.useState({ x: 0, y: 0 });
-      const canvasRef = React.useRef(null);
       const imageRef = React.useRef(null);
+
+      React.useEffect(() => () => {
+        if (previewUrl.startsWith('blob:')) URL.revokeObjectURL(previewUrl);
+      }, [previewUrl]);
 
       const handleFileChange = (e) => {
         const file = e.target.files[0];
@@ -1188,37 +1260,34 @@
         }
       };
 
-      const handleMouseDown = (e) => {
-        if (!imageFile) return;
-        setIsCropping(true);
+      const handlePointerDown = (event) => {
+        if (!imageFile || !imageRef.current) return;
+        event.preventDefault();
+        event.currentTarget.setPointerCapture(event.pointerId);
         const rect = imageRef.current.getBoundingClientRect();
-        setStartPoint({
-          x: e.clientX - rect.left,
-          y: e.clientY - rect.top
-        });
-        setCropRect({ x: e.clientX - rect.left, y: e.clientY - rect.top, width: 0, height: 0 });
+        const point = {
+          x: Math.max(0, Math.min(rect.width, event.clientX - rect.left)),
+          y: Math.max(0, Math.min(rect.height, event.clientY - rect.top))
+        };
+        setIsCropping(true);
+        setStartPoint(point);
+        setCropRect({ ...point, width: 0, height: 0 });
       };
 
-      const handleMouseMove = (e) => {
-        if (!isCropping || !imageFile) return;
+      const handlePointerMove = (event) => {
+        if (!isCropping || !imageFile || !imageRef.current) return;
         const rect = imageRef.current.getBoundingClientRect();
-        const currentX = e.clientX - rect.left;
-        const currentY = e.clientY - rect.top;
-
-        const newWidth = currentX - startPoint.x;
-        const newHeight = currentY - startPoint.y;
-
+        const currentX = Math.max(0, Math.min(rect.width, event.clientX - rect.left));
+        const currentY = Math.max(0, Math.min(rect.height, event.clientY - rect.top));
         setCropRect({
           x: Math.min(startPoint.x, currentX),
           y: Math.min(startPoint.y, currentY),
-          width: Math.abs(newWidth),
-          height: Math.abs(newHeight)
+          width: Math.abs(currentX - startPoint.x),
+          height: Math.abs(currentY - startPoint.y)
         });
       };
 
-      const handleMouseUp = () => {
-        setIsCropping(false);
-      };
+      const handlePointerUp = () => setIsCropping(false);
 
       const cropImage = () => {
         if (!imageFile || cropRect.width === 0 || cropRect.height === 0) return;
@@ -1226,34 +1295,25 @@
         const reader = new FileReader();
         reader.onload = (e) => {
           const img = new Image();
+          img.crossOrigin = 'anonymous';
           img.onload = () => {
+            const displayWidth = imageRef.current.clientWidth;
+            const displayHeight = imageRef.current.clientHeight;
+            const scaleX = img.naturalWidth / displayWidth;
+            const scaleY = img.naturalHeight / displayHeight;
+            const sourceX = Math.round(cropRect.x * scaleX);
+            const sourceY = Math.round(cropRect.y * scaleY);
+            const sourceWidth = Math.max(1, Math.round(cropRect.width * scaleX));
+            const sourceHeight = Math.max(1, Math.round(cropRect.height * scaleY));
             const canvas = document.createElement('canvas');
-            canvas.width = cropRect.width;
-            canvas.height = cropRect.height;
+            canvas.width = sourceWidth;
+            canvas.height = sourceHeight;
             const ctx = canvas.getContext('2d');
-
-            const imgDisplayWidth = imageRef.current.offsetWidth;
-            const imgDisplayHeight = imageRef.current.offsetHeight;
-            const scaleX = img.width / imgDisplayWidth;
-            const scaleY = img.height / imgDisplayHeight;
-
-            ctx.drawImage(
-              img,
-              cropRect.x * scaleX,
-              cropRect.y * scaleY,
-              cropRect.width * scaleX,
-              cropRect.height * scaleY,
-              0,
-              0,
-              cropRect.width,
-              cropRect.height
-            );
-
-            const link = document.createElement('a');
-            link.download = `cropped-image.png`;
-            link.href = canvas.toDataURL('image/png');
-            link.click();
+            if (!ctx) return;
+            ctx.drawImage(img, sourceX, sourceY, sourceWidth, sourceHeight, 0, 0, sourceWidth, sourceHeight);
+            downloadCanvas(canvas, 'cropped-image', 'image/png');
           };
+          img.crossOrigin = 'anonymous';
           img.src = e.target.result;
         };
         reader.readAsDataURL(imageFile);
@@ -1281,12 +1341,13 @@
           React.createElement(
             'div',
             {
-              className: "relative mb-4 cursor-crosshair rounded-md border-2 border-gray-300 p-4",
-              onMouseDown: handleMouseDown,
-              onMouseMove: handleMouseMove,
-              onMouseUp: handleMouseUp
+              className: "relative mb-4 inline-block max-w-full cursor-crosshair overflow-hidden touch-none",
+              onPointerDown: handlePointerDown,
+              onPointerMove: handlePointerMove,
+              onPointerUp: handlePointerUp,
+              onPointerCancel: handlePointerUp
             },
-            React.createElement('img', { ref: imageRef, src: previewUrl, alt: "Preview", className: "max-w-full h-auto", style: { display: 'block' } }),
+            React.createElement('img', { ref: imageRef, src: previewUrl, alt: "Uploaded image crop preview", className: "block max-w-full h-auto select-none", draggable: false }),
             isCropping && React.createElement('div', {
               className: "absolute border-2 border-indigo-600 bg-indigo-600 bg-opacity-20",
               style: {
@@ -1318,40 +1379,54 @@
       const [rate, setRate] = React.useState(1);
       const [volume, setVolume] = React.useState(1);
       const [isSpeaking, setIsSpeaking] = React.useState(false);
+      const [voiceError, setVoiceError] = React.useState('');
 
       React.useEffect(() => {
+        if (!('speechSynthesis' in window)) {
+          setVoiceError('Speech playback is not supported by this browser.');
+          return;
+        }
         const synth = window.speechSynthesis;
         const loadVoices = () => {
           const availableVoices = synth.getVoices();
           setVoices(availableVoices);
-          setSelectedVoice(availableVoices[0]);
+          setSelectedVoice(current => current || availableVoices[0] || null);
         };
-
-        if (synth.onvoiceschanged !== undefined) {
-          synth.onvoiceschanged = loadVoices;
-        } else {
-          loadVoices();
-        }
+        loadVoices();
+        synth.addEventListener('voiceschanged', loadVoices);
+        return () => {
+          synth.removeEventListener('voiceschanged', loadVoices);
+          synth.cancel();
+        };
       }, []);
 
       const handleSpeak = () => {
-        if (text.trim() === '' || !window.speechSynthesis) return;
-
-        const utterance = new SpeechSynthesisUtterance(text);
-        utterance.voice = selectedVoice;
+        if (!text.trim()) {
+          setVoiceError('Enter text before starting playback.');
+          return;
+        }
+        if (!('speechSynthesis' in window) || !('SpeechSynthesisUtterance' in window)) {
+          setVoiceError('Speech playback is not supported by this browser.');
+          return;
+        }
+        setVoiceError('');
+        window.speechSynthesis.cancel();
+        const utterance = new SpeechSynthesisUtterance(text.trim());
+        if (selectedVoice) utterance.voice = selectedVoice;
         utterance.pitch = pitch;
         utterance.rate = rate;
         utterance.volume = volume;
-
         utterance.onstart = () => setIsSpeaking(true);
         utterance.onend = () => setIsSpeaking(false);
-        utterance.onerror = () => setIsSpeaking(false);
-
+        utterance.onerror = event => {
+          setIsSpeaking(false);
+          if (event.error !== 'canceled' && event.error !== 'interrupted') setVoiceError('Playback could not start. Try another voice or browser.');
+        };
         window.speechSynthesis.speak(utterance);
       };
 
       const handleStop = () => {
-        window.speechSynthesis.cancel();
+        if ('speechSynthesis' in window) window.speechSynthesis.cancel();
         setIsSpeaking(false);
       };
 
@@ -1359,7 +1434,7 @@
         'div',
         null,
         React.createElement('h2', { className: "mb-4 text-2xl font-semibold" }, 'Text to Speech'),
-        React.createElement('p', { className: "mb-4 text-gray-500" }, 'Convert text into spoken audio.'),
+        React.createElement('p', { className: "mb-4 text-gray-500" }, 'Listen with voices available on your device. Playback only; audio file export is not supported.'),
         React.createElement(
           'div',
           { className: "mb-4" },
@@ -1448,9 +1523,10 @@
             )
           )
         ),
+        voiceError && React.createElement('p', { role: 'status', className: "mb-3 text-sm text-amber-700", 'aria-live': 'polite' }, voiceError),
         React.createElement(
           'div',
-          { className: "flex space-x-2" },
+          { className: "flex flex-col gap-2 sm:flex-row" },
           React.createElement(
             'button',
             {
