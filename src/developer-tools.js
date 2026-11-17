@@ -441,6 +441,35 @@ export function CssGradientTool() {
   return h('section', { className: 'max-w-3xl' }, h(ToolIntro, { title: 'CSS Gradient Generator' }, 'Create a two-color linear CSS gradient and copy the generated declaration. No external service is used.'), h('div', { className: 'grid gap-4 sm:grid-cols-3' }, [[start, setStart, 'Start color'], [end, setEnd, 'End color']].map(([color, setter, label]) => h('label', { className: 'block space-y-2', key: label }, h('span', { className: 'block text-sm font-semibold text-gray-800' }, label), h('input', { type: 'color', value: color, onChange: (event) => setter(event.target.value), className: 'h-12 w-full cursor-pointer rounded-lg border border-gray-200 bg-white p-1' }))), h('label', { className: 'block space-y-2' }, h('span', { className: 'text-sm font-semibold text-gray-800' }, `Angle · ${angle}°`), h('input', { type: 'range', min: 0, max: 360, value: angle, onChange: (event) => setAngle(event.target.value), className: 'mt-3 w-full accent-violet-600' }))), h('div', { className: 'mt-5 h-40 rounded-2xl border border-gray-200 shadow-inner', style: { background: value }, role: 'img', 'aria-label': `Gradient preview from ${start} to ${end} at ${angle} degrees` }), h(OutputPanel, { label: 'CSS gradient', value, rows: 2 }));
 }
 
+export function UniversalTool({ toolName, category }) {
+  const [input, setInput] = React.useState('');
+  const [output, setOutput] = React.useState('');
+  const [status, setStatus] = React.useState('');
+  const process = () => {
+    const value = input.trim();
+    if (!value) { setOutput(''); setStatus('Enter content to process.'); return; }
+    let result = value;
+    if (/counter|word/i.test(toolName)) result = `Words: ${countWords(value)}\nCharacters: ${value.length}\nLines: ${value.split(/\\r?\\n/).length}`;
+    else if (/slug/i.test(toolName)) result = createUrlSlug(value);
+    else if (/uppercase/i.test(toolName)) result = value.toUpperCase();
+    else if (/lowercase/i.test(toolName)) result = value.toLowerCase();
+    else if (/json/i.test(toolName)) { try { result = JSON.stringify(JSON.parse(value), null, 2); } catch { result = 'Enter valid JSON to format it.'; } }
+    else if (/base64/i.test(toolName)) { try { result = encodeBase64Utf8(value); } catch { result = value; } }
+    else if (/html/i.test(toolName)) result = encodeHtml(value);
+    else if (/duplicate/i.test(toolName)) result = removeDuplicateLines(value);
+    setOutput(result);
+    setStatus(`${toolName} processed locally in your browser.`);
+  };
+  const download = () => { const url = URL.createObjectURL(new Blob([output], { type: 'text/plain;charset=utf-8' })); const link = document.createElement('a'); link.href = url; link.download = `${createUrlSlug(toolName) || 'tool-output'}.txt`; link.click(); setTimeout(() => URL.revokeObjectURL(url), 1000); };
+  return h('section', { className: 'max-w-3xl' },
+    h(ToolIntro, { title: toolName }, `${toolName} workspace for ${category}. This release provides a safe local input/output surface while specialized processing is expanded category by category.`),
+    h(TextArea, { id: `${createUrlSlug(toolName)}-input`, label: 'Input', value: input, onChange: (event) => { setInput(event.target.value); setStatus(''); }, placeholder: 'Type or paste content here…', rows: 10, spellCheck: true }),
+    h('div', { className: 'mt-4 flex flex-wrap gap-2' }, h('button', { type: 'button', className: buttonClass, onClick: process, disabled: !input.trim() }, 'Process locally'), h('button', { type: 'button', className: 'rounded-xl border border-gray-200 bg-white px-4 py-2.5 text-sm font-semibold text-gray-700', onClick: () => { setInput(''); setOutput(''); setStatus(''); } }, 'Clear')),
+    status && h('p', { className: 'mt-3 text-sm text-emerald-700', role: 'status', 'aria-live': 'polite' }, status),
+    output && h('div', { className: 'mt-5' }, h(OutputPanel, { label: 'Output', value: output, rows: 10 }), h('div', { className: 'mt-2 flex justify-end' }, h('button', { type: 'button', className: buttonClass, onClick: download }, 'Download output')))
+  );
+}
+
 export function UrlSlugTool() {
   const [input, setInput] = React.useState('');
   const output = createUrlSlug(input);

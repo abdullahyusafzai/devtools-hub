@@ -78,7 +78,7 @@
   <script type="module">
   import { plannedToolCatalog } from './src/tool-catalog.js';
   import { generateSpeechWav } from './src/voice-generator.js';
-  import { Base64Tool, CsvToJsonTool, DuplicateLinesTool, GrammarCorrectionTool, HtmlEntitiesTool, JsonToCsvTool, MarkdownPreviewTool, ReadingTimeTool, RegexTesterTool, CssGradientTool, Sha256Tool, TextCleanerTool, UnixTimestampTool, UrlSlugTool, UuidTool } from './src/developer-tools.js';
+  import { Base64Tool, CsvToJsonTool, DuplicateLinesTool, GrammarCorrectionTool, HtmlEntitiesTool, JsonToCsvTool, MarkdownPreviewTool, ReadingTimeTool, RegexTesterTool, CssGradientTool, Sha256Tool, TextCleanerTool, UnixTimestampTool, UniversalTool, UrlSlugTool, UuidTool } from './src/developer-tools.js';
 
     // Centralized list of tools with their IDs, names, and SVG icons
     const tools = [
@@ -398,8 +398,11 @@
             return React.createElement(ToolPage, { toolName: currentPage === 'ai-voice-artist' ? "Offline Voice Artist" : "Text to Speech", setCurrentPage }, React.createElement(TextToSpeech));
           case 'snake-game':
             return React.createElement(ToolPage, { toolName: "Classic Snake Game", setCurrentPage }, React.createElement(window.SnakeGame));
-          default:
+          default: {
+            const catalogTool = catalogTools.find((tool) => tool.id === currentPage);
+            if (catalogTool) return React.createElement(ToolPage, { toolName: catalogTool.name, setCurrentPage }, React.createElement(UniversalTool, { toolName: catalogTool.name, category: catalogTool.category }));
             return React.createElement(HomePage, { setCurrentPage, favorites, setFavorites, favoritesOnly });
+          }
         }
       };
 
