@@ -144,14 +144,14 @@
 - [ ] JWT Decoder
 - [ ] UUID Generator
 - [ ] SHA-256 Hash Generator
-- [ ] Regex Tester
+- [x] Regex Tester (local JavaScript pattern matching)
 - [ ] Code Difference Checker
-- [ ] Markdown Preview
+- [x] Markdown Preview (safe subset; raw HTML escaped)
 - [ ] HTML Preview
-- [ ] CSV to JSON
-- [ ] JSON to CSV
+- [x] CSV to JSON
+- [x] JSON to CSV
 - [ ] Unix Timestamp Converter
-- [ ] CSS Gradient Generator
+- [x] CSS Gradient Generator
 - [ ] CSS Shadow Generator
 - [ ] Sample Data Generator
 

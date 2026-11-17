@@ -97,6 +97,7 @@ Classic Snake Game; Tic-Tac-Toe; Memory Matching Game; Number Guessing Game; Typ
 - Offline Voice Artist/Text to Speech route with locally synthesized speech, self-hosted English engine data, and downloadable WAV output.
 - Local Image to PDF tool for multiple PNG/JPEG images, with size/count validation and a real downloadable PDF.
 - Local JSON Formatter (pretty-print/minify/copy/download) and JSON Validator with clear syntax errors.
+- Local Regex Tester, CSV-to-JSON and JSON-to-CSV converters, safe Markdown Preview, and CSS Gradient Generator.
 - Original Snake game with keyboard/touch controls, difficulty, pause/restart, scoring, collision handling, and local high score.
 - Vite workflow, README, `.env.example`, and tool checklist.
 

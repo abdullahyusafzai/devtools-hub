@@ -339,6 +339,108 @@ export function ReadingTimeTool() {
   );
 }
 
+export function RegexTesterTool() {
+  const [pattern, setPattern] = React.useState('\\b\\w+\\b');
+  const [flags, setFlags] = React.useState('g');
+  const [input, setInput] = React.useState('Try matching words in this sample text.');
+  let regexError = '';
+  let matches = [];
+  try {
+    const expression = new RegExp(pattern, [...new Set(flags.replace(/[^dgimsuvy]/g, '').split(''))].join(''));
+    matches = Array.from(input.matchAll(expression), (match) => ({ value: match[0], index: match.index }));
+  } catch (matchError) {
+    regexError = matchError.message;
+  }
+  return h('section', { className: 'max-w-3xl' },
+    h(ToolIntro, { title: 'Regex Tester' }, 'Test a JavaScript regular expression against text locally. Matches and character positions update as you type.'),
+    h('div', { className: 'grid gap-3 sm:grid-cols-[minmax(0,1fr)_8rem]' },
+      h('label', { className: 'block space-y-2' }, h('span', { className: 'text-sm font-semibold text-gray-800' }, 'Pattern'), h('input', { value: pattern, onChange: (event) => setPattern(event.target.value), className: fieldClass, placeholder: 'Enter a regular expression' })),
+      h('label', { className: 'block space-y-2' }, h('span', { className: 'text-sm font-semibold text-gray-800' }, 'Flags'), h('input', { value: flags, onChange: (event) => setFlags(event.target.value), className: fieldClass, maxLength: 7, placeholder: 'gim' }))),
+    h('div', { className: 'mt-4' }, h(TextArea, { id: 'regex-test-input', label: 'Test text', value: input, onChange: (event) => setInput(event.target.value), rows: 7 })),
+    regexError ? h(ToolError, { message: `Invalid regular expression: ${regexError}` }) : h('div', { className: 'mt-4 rounded-xl border border-gray-200 bg-gray-50 p-4', role: 'status', 'aria-live': 'polite' }, h('p', { className: 'text-sm font-semibold text-gray-800' }, `${matches.length} ${matches.length === 1 ? 'match' : 'matches'}`), matches.length ? h('ul', { className: 'mt-2 space-y-1 font-mono text-sm text-gray-700' }, matches.slice(0, 100).map((match, index) => h('li', { key: `${match.index}-${index}`, className: 'safe-wrap' }, `${index + 1}. “${match.value}” at ${match.index}`))) : h('p', { className: 'mt-2 text-sm text-gray-500' }, 'No matches.'))
+  );
+}
+
+function parseCsv(text) {
+  const rows = [];
+  let row = [];
+  let cell = '';
+  let quoted = false;
+  for (let index = 0; index < text.length; index += 1) {
+    const character = text[index];
+    if (quoted) {
+      if (character === '"' && text[index + 1] === '"') { cell += '"'; index += 1; }
+      else if (character === '"') quoted = false;
+      else cell += character;
+    } else if (character === '"' && cell === '') quoted = true;
+    else if (character === ',') { row.push(cell); cell = ''; }
+    else if (character === '\n' || character === '\r') {
+      if (character === '\r' && text[index + 1] === '\n') index += 1;
+      row.push(cell); rows.push(row); row = []; cell = '';
+    } else cell += character;
+  }
+  if (quoted) throw new Error('Close the quoted field before converting.');
+  if (cell || row.length) { row.push(cell); rows.push(row); }
+  return rows;
+}
+
+export function CsvToJsonTool() {
+  const [input, setInput] = React.useState('name,role\nAda,Engineer\nLinus,Developer');
+  const [output, setOutput] = React.useState('');
+  const [error, setError] = React.useState('');
+  const convert = () => {
+    try {
+      const rows = parseCsv(input);
+      if (!rows.length) throw new Error('Enter CSV data with a header row.');
+      const [headers, ...records] = rows;
+      if (headers.some((header) => !header.trim()) || new Set(headers).size !== headers.length) throw new Error('Headers must be non-empty and unique.');
+      if (records.some((record) => record.length !== headers.length)) throw new Error('Every row must have the same number of columns as the header.');
+      setOutput(JSON.stringify(records.map((record) => Object.fromEntries(headers.map((header, index) => [header, record[index]]))), null, 2));
+      setError('');
+    } catch (conversionError) { setOutput(''); setError(conversionError.message); }
+  };
+  return h('section', { className: 'max-w-3xl' }, h(ToolIntro, { title: 'CSV to JSON' }, 'Convert comma-separated values into an array of objects. Quoted commas and escaped quotes are supported; data stays in your browser.'), h(TextArea, { id: 'csv-to-json-input', label: 'CSV input (first row is headers)', value: input, onChange: (event) => setInput(event.target.value), rows: 8 }), h('button', { type: 'button', className: `${buttonClass} mt-4`, onClick: convert, disabled: !input.trim() }, 'Convert to JSON'), h(ToolError, { message: error }), output && h(OutputPanel, { label: 'JSON output', value: output, rows: 10 }));
+}
+
+export function JsonToCsvTool() {
+  const [input, setInput] = React.useState('[{"name":"Ada","role":"Engineer"},{"name":"Linus","role":"Developer"}]');
+  const [output, setOutput] = React.useState('');
+  const [error, setError] = React.useState('');
+  const convert = () => {
+    try {
+      const records = JSON.parse(input);
+      if (!Array.isArray(records) || records.some((record) => !record || typeof record !== 'object' || Array.isArray(record))) throw new Error('Provide a JSON array of objects.');
+      const headers = [...new Set(records.flatMap((record) => Object.keys(record)))];
+      if (!headers.length) throw new Error('Add at least one object with a property.');
+      const quote = (value) => { const text = value == null ? '' : typeof value === 'object' ? JSON.stringify(value) : String(value); return /[",\r\n]/.test(text) ? `"${text.replace(/"/g, '""')}"` : text; };
+      setOutput([headers.map(quote).join(','), ...records.map((record) => headers.map((key) => quote(record[key])).join(','))].join('\n'));
+      setError('');
+    } catch (conversionError) { setOutput(''); setError(conversionError instanceof SyntaxError ? 'Enter valid JSON.' : conversionError.message); }
+  };
+  return h('section', { className: 'max-w-3xl' }, h(ToolIntro, { title: 'JSON to CSV' }, 'Convert a JSON array of objects into CSV. Fields are quoted and escaped as needed; conversion is local.'), h(TextArea, { id: 'json-to-csv-input', label: 'JSON input', value: input, onChange: (event) => setInput(event.target.value), rows: 8 }), h('button', { type: 'button', className: `${buttonClass} mt-4`, onClick: convert, disabled: !input.trim() }, 'Convert to CSV'), h(ToolError, { message: error }), output && h(OutputPanel, { label: 'CSV output', value: output, rows: 8 }));
+}
+
+export function MarkdownPreviewTool() {
+  const [markdown, setMarkdown] = React.useState('# Hello\n\nWrite **Markdown** here.\n\n- Local preview\n- No upload');
+  const html = markdown.split(/\n{2,}/).map((block) => {
+    const escaped = block.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+    if (escaped.startsWith('### ')) return `<h3>${escaped.slice(4)}</h3>`;
+    if (escaped.startsWith('## ')) return `<h2>${escaped.slice(3)}</h2>`;
+    if (escaped.startsWith('# ')) return `<h1>${escaped.slice(2)}</h1>`;
+    if (/^(?:- |\\* )/m.test(escaped)) return `<ul>${escaped.split('\\n').map((line) => `<li>${line.replace(/^(?:- |\\* )/, '')}</li>`).join('')}</ul>`;
+    return `<p>${escaped.replace(/\\*\\*(.+?)\\*\\*/g, '<strong>$1</strong>').replace(/\\*(.+?)\\*/g, '<em>$1</em>')}</p>`;
+  }).join('');
+  return h('section', { className: 'max-w-4xl' }, h(ToolIntro, { title: 'Markdown Preview' }, 'Write a small subset of Markdown and preview its headings, paragraphs, emphasis, and lists. Raw HTML is escaped for safety.'), h('div', { className: 'grid gap-4 md:grid-cols-2' }, h(TextArea, { id: 'markdown-input', label: 'Markdown', value: markdown, onChange: (event) => setMarkdown(event.target.value), rows: 12 }), h('div', { className: 'space-y-2' }, h('h2', { className: 'text-sm font-semibold text-gray-800' }, 'Preview'), h('div', { className: 'min-h-64 space-y-3 rounded-xl border border-gray-200 bg-white p-4 text-sm leading-6 text-gray-800', dangerouslySetInnerHTML: { __html: html } }))));
+}
+
+export function CssGradientTool() {
+  const [start, setStart] = React.useState('#6558f5');
+  const [end, setEnd] = React.useState('#22d3ee');
+  const [angle, setAngle] = React.useState('135');
+  const value = `linear-gradient(${angle}deg, ${start}, ${end})`;
+  return h('section', { className: 'max-w-3xl' }, h(ToolIntro, { title: 'CSS Gradient Generator' }, 'Create a two-color linear CSS gradient and copy the generated declaration. No external service is used.'), h('div', { className: 'grid gap-4 sm:grid-cols-3' }, [[start, setStart, 'Start color'], [end, setEnd, 'End color']].map(([color, setter, label]) => h('label', { className: 'block space-y-2', key: label }, h('span', { className: 'block text-sm font-semibold text-gray-800' }, label), h('input', { type: 'color', value: color, onChange: (event) => setter(event.target.value), className: 'h-12 w-full cursor-pointer rounded-lg border border-gray-200 bg-white p-1' }))), h('label', { className: 'block space-y-2' }, h('span', { className: 'text-sm font-semibold text-gray-800' }, `Angle · ${angle}°`), h('input', { type: 'range', min: 0, max: 360, value: angle, onChange: (event) => setAngle(event.target.value), className: 'mt-3 w-full accent-violet-600' }))), h('div', { className: 'mt-5 h-40 rounded-2xl border border-gray-200 shadow-inner', style: { background: value }, role: 'img', 'aria-label': `Gradient preview from ${start} to ${end} at ${angle} degrees` }), h(OutputPanel, { label: 'CSS gradient', value, rows: 2 }));
+}
+
 export function UrlSlugTool() {
   const [input, setInput] = React.useState('');
   const output = createUrlSlug(input);

@@ -78,7 +78,7 @@
   <script type="module">
   import { plannedToolCatalog } from './src/tool-catalog.js';
   import { generateSpeechWav } from './src/voice-generator.js';
-  import { Base64Tool, DuplicateLinesTool, GrammarCorrectionTool, HtmlEntitiesTool, ReadingTimeTool, Sha256Tool, TextCleanerTool, UnixTimestampTool, UrlSlugTool, UuidTool } from './src/developer-tools.js';
+  import { Base64Tool, CsvToJsonTool, DuplicateLinesTool, GrammarCorrectionTool, HtmlEntitiesTool, JsonToCsvTool, MarkdownPreviewTool, ReadingTimeTool, RegexTesterTool, CssGradientTool, Sha256Tool, TextCleanerTool, UnixTimestampTool, UrlSlugTool, UuidTool } from './src/developer-tools.js';
 
     // Centralized list of tools with their IDs, names, and SVG icons
     const tools = [
@@ -107,7 +107,12 @@
       { id: 'remove-duplicate-lines', name: 'Remove Duplicate Lines', svg: developerToolIcon },
       { id: 'text-cleaner', name: 'Text Cleaner', svg: developerToolIcon },
       { id: 'reading-time-calculator', name: 'Reading Time Calculator', svg: developerToolIcon },
-      { id: 'url-slug-generator', name: 'URL Slug Generator', svg: developerToolIcon }
+      { id: 'url-slug-generator', name: 'URL Slug Generator', svg: developerToolIcon },
+      { id: 'regex-tester', name: 'Regex Tester', svg: developerToolIcon },
+      { id: 'csv-to-json', name: 'CSV to JSON', svg: developerToolIcon },
+      { id: 'json-to-csv', name: 'JSON to CSV', svg: developerToolIcon },
+      { id: 'markdown-preview', name: 'Markdown Preview', svg: developerToolIcon },
+      { id: 'css-gradient-generator', name: 'CSS Gradient Generator', svg: developerToolIcon }
     );
 
     const categories = ['All Tools', 'AI Tools', 'Text & Writing', 'PDF & Documents', 'Images & Design', 'Audio & Voice', 'Video', 'QR Codes & Links', 'Developer Tools', 'Calculators & Converters', 'Productivity & Text', 'SEO & Marketing', 'Business & Careers', 'Education', 'Security & Privacy', 'Games & Entertainment'];
@@ -133,7 +138,12 @@
       'remove-duplicate-lines': 'Productivity & Text',
       'text-cleaner': 'Productivity & Text',
       'reading-time-calculator': 'Productivity & Text',
-      'url-slug-generator': 'SEO & Marketing'
+      'url-slug-generator': 'SEO & Marketing',
+      'regex-tester': 'Developer Tools',
+      'csv-to-json': 'Developer Tools',
+      'json-to-csv': 'Developer Tools',
+      'markdown-preview': 'Developer Tools',
+      'css-gradient-generator': 'Developer Tools'
     };
     const toolDescriptions = {
       'qr-code-generator': 'Create a scannable code from text or a link.',
@@ -157,7 +167,12 @@
       'remove-duplicate-lines': 'Remove repeated lines from text without uploading it.',
       'text-cleaner': 'Normalize whitespace and remove excess blank lines locally.',
       'reading-time-calculator': 'Estimate reading time and count words entirely in your browser.',
-      'url-slug-generator': 'Create clean URL slugs from page titles locally.'
+      'url-slug-generator': 'Create clean URL slugs from page titles locally.',
+      'regex-tester': 'Test JavaScript regular expressions against text on this device.',
+      'csv-to-json': 'Convert CSV rows into JSON objects locally.',
+      'json-to-csv': 'Convert arrays of JSON objects to CSV locally.',
+      'markdown-preview': 'Preview a safe subset of Markdown without uploading text.',
+      'css-gradient-generator': 'Build and preview a two-color CSS gradient.'
     };
     const existingToolNames = new Set(tools.map((tool) => tool.name.toLowerCase()));
     const implementedCatalogNames = new Set(['Offline Voice Artist', 'Classic Snake Game', 'Image to PDF', 'JSON Formatter', 'JSON Validator'].map((name) => name.toLowerCase()));
@@ -345,6 +360,16 @@
             return React.createElement(ToolPage, { toolName: "Simple Image Cropper", setCurrentPage }, React.createElement(SimpleImageCropper));
           case 'image-to-pdf':
             return React.createElement(ToolPage, { toolName: "Image to PDF", setCurrentPage }, React.createElement(ImageToPdf));
+          case 'regex-tester':
+            return React.createElement(ToolPage, { toolName: 'Regex Tester', setCurrentPage }, React.createElement(RegexTesterTool));
+          case 'csv-to-json':
+            return React.createElement(ToolPage, { toolName: 'CSV to JSON', setCurrentPage }, React.createElement(CsvToJsonTool));
+          case 'json-to-csv':
+            return React.createElement(ToolPage, { toolName: 'JSON to CSV', setCurrentPage }, React.createElement(JsonToCsvTool));
+          case 'markdown-preview':
+            return React.createElement(ToolPage, { toolName: 'Markdown Preview', setCurrentPage }, React.createElement(MarkdownPreviewTool));
+          case 'css-gradient-generator':
+            return React.createElement(ToolPage, { toolName: 'CSS Gradient Generator', setCurrentPage }, React.createElement(CssGradientTool));
           case 'json-formatter':
           case 'json-validator':
             return React.createElement(ToolPage, { toolName: currentPage === 'json-validator' ? "JSON Validator" : "JSON Formatter", setCurrentPage }, React.createElement(JsonTool, { key: currentPage, mode: currentPage === 'json-validator' ? 'validate' : 'format' }));
