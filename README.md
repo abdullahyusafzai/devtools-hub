@@ -16,6 +16,6 @@ The original utilities, Image to PDF, and JSON Formatter/Validator process data 
 
 Deploy the repository to Vercel. Vite builds the static page and Vercel serves the `api/voice.js` serverless function. Add `AI_GATEWAY_API_KEY` to the Vercel project only if local/non-Vercel Gateway authentication is required; do not expose secrets in frontend code.
 
-The speech endpoint currently uses a short-window per-process rate limiter plus a 4,000-character request cap. For a high-traffic public deployment, replace the process-local limiter with a shared rate-limit/usage-control service before promoting the endpoint widely.
+The speech endpoint uses a shared Upstash sliding-window limit of three requests per minute per client, plus a 4,000-character request cap. Accepted requests and character counts are tracked in daily Redis usage counters with a 90-day retention period; client addresses are HMAC-hashed rather than stored directly. The endpoint fails closed with a 503 if shared rate protection is unavailable. Keep the Upstash for Redis integration connected in every deployment environment.
 
 See [PROJECT_REQUIREMENTS.md](PROJECT_REQUIREMENTS.md) and [TOOL_CHECKLIST.md](TOOL_CHECKLIST.md) for scope and implementation status.

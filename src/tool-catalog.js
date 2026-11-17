@@ -1,5 +1,4 @@
-(function () {
-  const groups = {
+const groups = {
     'AI Tools': [
       'AI Rephrasing Tool', 'Grammar Checker', 'Spell Checker', 'Sentence Rewriter', 'Text Summarizer', 'AI Content Improver', 'Tone Changer', 'AI Email Writer', 'Professional Message Generator', 'Paragraph Generator', 'Blog Outline Generator', 'Article Outline Generator', 'Text Simplifier', 'Translation Tool', 'Readability Checker', 'AI Title Generator', 'Social Media Caption Generator', 'AI Study Notes Generator'
     ],
@@ -61,7 +60,7 @@
     'Simple Sudoku': 'play game'
   };
 
-  window.plannedToolCatalog = Object.entries(groups).flatMap(([category, names]) => names.map((name) => ({
+export const plannedToolCatalog = Object.entries(groups).flatMap(([category, names]) => names.map((name) => ({
     id: name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, ''),
     name,
     category,
@@ -69,4 +68,3 @@
     keywords: `${name} ${category} ${searchAliases[name] || ''}`,
     available: false
   })));
-})();

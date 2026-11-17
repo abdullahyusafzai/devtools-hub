@@ -1,32 +1,15 @@
 import { createVoiceAudio } from '../lib/voice-provider.js';
+import { getVoiceProtection } from '../lib/voice-protection.js';
 
 const MAX_TEXT_CHARACTERS = 4000;
 const MAX_BODY_BYTES = 40000;
-const RATE_LIMIT_WINDOW_MS = 60_000;
-const MAX_REQUESTS_PER_WINDOW = 3;
-const requestHistory = new Map();
+const VOICE_SPEND_CAP_USD = 0;
 const ALLOWED_VOICES = new Set(['alloy', 'echo', 'fable', 'onyx', 'nova', 'shimmer']);
 
-function getClientKey(request) {
+function getClientAddress(request) {
   const forwardedFor = request.headers['x-forwarded-for'];
-  const clientIp = typeof forwardedFor === 'string' ? forwardedFor.split(',')[0].trim() : '';
-  return clientIp || 'unknown-client';
-}
-
-function isRateLimited(clientKey, now) {
-  const recentRequests = (requestHistory.get(clientKey) || []).filter((timestamp) => now - timestamp < RATE_LIMIT_WINDOW_MS);
-  if (recentRequests.length >= MAX_REQUESTS_PER_WINDOW) {
-    requestHistory.set(clientKey, recentRequests);
-    return true;
-  }
-  recentRequests.push(now);
-  requestHistory.set(clientKey, recentRequests);
-  if (requestHistory.size > 1000) {
-    for (const [key, timestamps] of requestHistory) {
-      if (!timestamps.some((timestamp) => now - timestamp < RATE_LIMIT_WINDOW_MS)) requestHistory.delete(key);
-    }
-  }
-  return false;
+  const clientAddress = typeof forwardedFor === 'string' ? forwardedFor.split(',')[0].trim() : '';
+  return clientAddress || 'unknown-client';
 }
 
 export default async function handler(request, response) {
@@ -43,12 +26,6 @@ export default async function handler(request, response) {
     return response.status(413).json({ error: 'The request is too large.' });
   }
 
-  const now = Date.now();
-  if (isRateLimited(getClientKey(request), now)) {
-    response.setHeader('Retry-After', '60');
-    return response.status(429).json({ error: 'Please wait a minute before generating another voice.' });
-  }
-
   const { text, voice, speed } = request.body || {};
   if (typeof text !== 'string' || !text.trim()) {
     return response.status(400).json({ error: 'Enter text before generating audio.' });
@@ -62,23 +39,46 @@ export default async function handler(request, response) {
   if (typeof speed !== 'number' || !Number.isFinite(speed) || speed < 0.5 || speed > 2) {
     return response.status(400).json({ error: 'Speech speed must be between 0.5 and 2.' });
   }
+  if (VOICE_SPEND_CAP_USD === 0) {
+    return response.status(402).json({ error: 'Paid AI voice generation is disabled under the current $0 monthly spending cap.' });
+  }
 
   const hasDeploymentGatewayAuth = Boolean(process.env.VERCEL && ['preview', 'production'].includes(process.env.VERCEL_ENV));
   if (!hasDeploymentGatewayAuth && !process.env.AI_GATEWAY_API_KEY) {
     return response.status(503).json({ error: 'Downloadable voice generation needs AI Gateway authentication. Add an AI_GATEWAY_API_KEY for local development, or use a Vercel deployment.' });
   }
 
+  let allowance;
   try {
-    const audio = await createVoiceAudio({ text: text.trim(), voice, speed });
-    if (!audio.bytes.byteLength || audio.contentType !== 'audio/mpeg' || audio.format !== 'mp3') {
-      return response.status(502).json({ error: 'The speech provider returned an unsupported audio format.' });
-    }
-
-    response.setHeader('Content-Type', audio.contentType);
-    response.setHeader('Content-Length', String(audio.bytes.byteLength));
-    response.setHeader('Content-Disposition', 'inline; filename="voiceover.mp3"');
-    return response.status(200).send(Buffer.from(audio.bytes));
+    allowance = await getVoiceProtection().consume({
+      clientAddress: getClientAddress(request),
+      characterCount: text.trim().length
+    });
   } catch {
+    return response.status(503).json({ error: 'Shared voice protection is temporarily unavailable. Please try again later.' });
+  }
+
+  if (!allowance.success) {
+    const retryAfter = Math.max(1, Math.ceil((allowance.reset - Date.now()) / 1000));
+    response.setHeader('Retry-After', String(retryAfter));
+    return response.status(429).json({ error: 'Please wait before generating another voice.' });
+  }
+
+  const recordOutcome = (outcome) => allowance.recordOutcome(outcome).catch(() => {});
+  let audio;
+  try {
+    audio = await createVoiceAudio({ text: text.trim(), voice, speed });
+    if (!audio.bytes.byteLength || audio.contentType !== 'audio/mpeg' || audio.format !== 'mp3') {
+      throw new Error('The speech provider returned an unsupported audio format.');
+    }
+  } catch {
+    await recordOutcome('failed');
     return response.status(502).json({ error: 'Voice generation could not be completed. Check AI Gateway availability and try again.' });
   }
+
+  await recordOutcome('succeeded');
+  response.setHeader('Content-Type', audio.contentType);
+  response.setHeader('Content-Length', String(audio.bytes.byteLength));
+  response.setHeader('Content-Disposition', 'inline; filename="voiceover.mp3"');
+  return response.status(200).send(Buffer.from(audio.bytes));
 }

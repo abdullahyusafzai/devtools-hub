@@ -262,7 +262,8 @@
 - [ ] Simple Sudoku
 
 ## Operational follow-up
-- [ ] Replace per-process speech throttling with shared rate limiting and usage accounting.
+- [x] Replace per-process speech throttling with shared Upstash sliding-window rate limiting and daily usage accounting (90-day retention; client addresses are HMAC-hashed).
+- [ ] Confirm Upstash Redis credentials are available in the deployment environment and run a live rate-limit/usage smoke test.
 - [ ] Configure a valid AdSense ad-slot ID before showing ads.
 - [ ] Verify the live Gateway model call in a Vercel deployment with configured authentication.
 - [ ] Add automated regression, accessibility, and broader device tests.

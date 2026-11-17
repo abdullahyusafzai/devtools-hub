@@ -70,7 +70,7 @@ Classic Snake Game; Tic-Tac-Toe; Memory Matching Game; Number Guessing Game; Typ
 - Offer only voice controls verified for the selected model. The current OpenAI TTS-1 model exposes six voices and speed; language follows input text, and pitch/style are not offered for generated audio.
 - Show text/character limits, input validation, progress, errors, cancel, audio playback, custom filename, and a real download.
 - Maximum script length is 4,000 characters. Local generation needs an AI Gateway key; Vercel deployments use Gateway deployment authentication.
-- Protect provider spend with request limits. The current process-local limit is a baseline only and must be replaced with a shared limiter before high-traffic public use.
+- Protect provider spend with a shared three-per-minute sliding-window limit and daily usage counters; fail closed if Redis protection is unavailable.
 
 ### Snake
 - Original grid-based game, not an image or commercial asset copy.
@@ -105,19 +105,19 @@ Classic Snake Game; Tic-Tac-Toe; Memory Matching Game; Number Guessing Game; Typ
 
 ## Pending work
 - Actual implementations for the remaining catalog tools, added category by category.
-- Shared/distributed speech rate limiting and usage accounting for a high-traffic public endpoint.
+- Live deployment verification of the connected Upstash rate-limit and usage-accounting service.
 - Automated tests for every released tool; complete browser/device/accessibility regression testing.
 - Additional translations and language-specific voice support only when the selected provider supports it.
 - Configure a real AdSense ad-slot ID before displaying ads; the inherited slot value is a publisher ID, not an ad slot.
 
 ## Known constraints
 - The configured speech model exports MP3 only in this app; WAV is intentionally not offered without a verified provider/model format.
-- The in-memory speech limiter is per server process and is not sufficient as a distributed production abuse-control mechanism.
+- Speech generation uses shared Upstash sliding-window rate limiting and daily usage counters; the local sandbox does not currently expose the integration's Redis environment variables, so live Redis behavior must be smoke-tested in a configured Vercel environment.
 - Local Vite preview serves the UI; use the Vercel development runtime for local function testing. The current sandbox did not have a local Gateway credential, so live model generation was not exercised here.
 - Tailwind is still loaded from its CDN as in the original static project; the Vite production build reports its upstream recommendation to bundle Tailwind for production.
 
 ## Next priorities
-1. Add a shared rate-limit/usage-control provider before broad public promotion of voice generation.
+1. Complete configured Vercel smoke tests for Upstash rate limiting and Gateway speech generation.
 2. Expand the PDF and developer tool families, and add more image catalog utilities.
 3. Add automated regression checks for each released tool and representative responsive/accessibility tests.
 4. Continue category-by-category expansion and internationalization.
