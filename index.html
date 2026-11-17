@@ -71,13 +71,12 @@
   <!-- The root div for our React application -->
   <div id="root"></div>
 
-  <script src="/catalog.js"></script>
   <script src="/snake-game.js"></script>
   <script type="module" src="/src/pdf-tools-loader.js"></script>
 
   <!-- All of the React application code goes here -->
-  <script>
-    'use strict';
+  <script type="module">
+  import { plannedToolCatalog } from './src/tool-catalog.js';
 
     // Centralized list of tools with their IDs, names, and SVG icons
     const tools = [
@@ -134,7 +133,7 @@
         keywords: tool.id === 'text-to-speech' ? 'ai voice artist downloadable text to speech mp3 voiceover narration convert audio speak' : tool.id === 'url-encoder-decoder' ? 'url encode decode developer links' : tool.id,
         available: true
       })),
-      ...window.plannedToolCatalog.filter((tool) => !existingToolNames.has(tool.name.toLowerCase()) && !implementedCatalogNames.has(tool.name.toLowerCase())),
+      ...plannedToolCatalog.filter((tool) => !existingToolNames.has(tool.name.toLowerCase()) && !implementedCatalogNames.has(tool.name.toLowerCase())),
       { id: 'ai-voice-artist', name: 'AI Voice Artist', category: 'Audio & Voice', description: 'Generate and download real MP3 voiceovers using supported AI voices.', keywords: 'text speech downloadable mp3 voice narration convert', available: true, svg: tools.find((tool) => tool.id === 'text-to-speech').svg },
       { id: 'snake-game', name: 'Classic Snake Game', category: 'Games & Entertainment', description: 'Play a responsive grid-based Snake game with touch and keyboard controls.', keywords: 'snake game nokia classic games play', available: true, svg: tools[0].svg },
       { id: 'image-to-pdf', name: 'Image to PDF', category: 'PDF & Documents', description: 'Combine PNG and JPEG images into a private, locally created PDF.', keywords: 'pdf convert images jpg png document', available: true, svg: tools.find((tool) => tool.id === 'image-converter').svg },
