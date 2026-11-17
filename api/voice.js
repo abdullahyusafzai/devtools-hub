@@ -3,6 +3,7 @@ import { getVoiceProtection } from '../lib/voice-protection.js';
 
 const MAX_TEXT_CHARACTERS = 4000;
 const MAX_BODY_BYTES = 40000;
+const VOICE_SPEND_CAP_USD = 0;
 const ALLOWED_VOICES = new Set(['alloy', 'echo', 'fable', 'onyx', 'nova', 'shimmer']);
 
 function getClientAddress(request) {
@@ -37,6 +38,9 @@ export default async function handler(request, response) {
   }
   if (typeof speed !== 'number' || !Number.isFinite(speed) || speed < 0.5 || speed > 2) {
     return response.status(400).json({ error: 'Speech speed must be between 0.5 and 2.' });
+  }
+  if (VOICE_SPEND_CAP_USD === 0) {
+    return response.status(402).json({ error: 'Paid AI voice generation is disabled under the current $0 monthly spending cap.' });
   }
 
   const hasDeploymentGatewayAuth = Boolean(process.env.VERCEL && ['preview', 'production'].includes(process.env.VERCEL_ENV));

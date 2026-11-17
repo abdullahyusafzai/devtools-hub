@@ -121,7 +121,7 @@
       'image-resizer': 'Resize an image to fit your needs.',
       'image-compressor': 'Reduce image file size in your browser.',
       'image-cropper': 'Crop an image with a touch-friendly selection.',
-      'text-to-speech': 'Preview speech in-browser or generate a downloadable MP3.'
+      'text-to-speech': 'Preview speech on your device. Paid AI audio generation is disabled under the $0 spending cap.'
     };
     const existingToolNames = new Set(tools.map((tool) => tool.name.toLowerCase()));
     const implementedCatalogNames = new Set(['AI Voice Artist', 'Classic Snake Game', 'Image to PDF', 'JSON Formatter', 'JSON Validator'].map((name) => name.toLowerCase()));
@@ -134,7 +134,7 @@
         available: true
       })),
       ...plannedToolCatalog.filter((tool) => !existingToolNames.has(tool.name.toLowerCase()) && !implementedCatalogNames.has(tool.name.toLowerCase())),
-      { id: 'ai-voice-artist', name: 'AI Voice Artist', category: 'Audio & Voice', description: 'Generate and download real MP3 voiceovers using supported AI voices.', keywords: 'text speech downloadable mp3 voice narration convert', available: true, svg: tools.find((tool) => tool.id === 'text-to-speech').svg },
+      { id: 'ai-voice-artist', name: 'AI Voice Artist', category: 'Audio & Voice', description: 'Preview speech in your browser. Paid AI voice generation and MP3 downloads are disabled under the $0 spending cap.', keywords: 'text speech downloadable mp3 voice narration convert', available: true, svg: tools.find((tool) => tool.id === 'text-to-speech').svg },
       { id: 'snake-game', name: 'Classic Snake Game', category: 'Games & Entertainment', description: 'Play a responsive grid-based Snake game with touch and keyboard controls.', keywords: 'snake game nokia classic games play', available: true, svg: tools[0].svg },
       { id: 'image-to-pdf', name: 'Image to PDF', category: 'PDF & Documents', description: 'Combine PNG and JPEG images into a private, locally created PDF.', keywords: 'pdf convert images jpg png document', available: true, svg: tools.find((tool) => tool.id === 'image-converter').svg },
       { id: 'json-formatter', name: 'JSON Formatter', category: 'Developer Tools', description: 'Format, minify, copy, and download JSON in your browser.', keywords: 'json prettify format minify developer', available: true, svg: tools.find((tool) => tool.id === 'url-encoder-decoder').svg },
@@ -187,8 +187,12 @@
       });
     };
 
+    const ADSENSE_CLIENT_ID = 'ca-pub-5058994010586674';
+    const ADSENSE_AD_SLOT_ID = '';
+    const PAID_VOICE_GENERATION_ENABLED = false;
+
     // Reusable AdSenseAd component
-    const AdSenseAd = ({ slot, client = "ca-pub-5058994010586674" }) => {
+    const AdSenseAd = ({ slot, client = ADSENSE_CLIENT_ID }) => {
       const hasValidSlot = /^\d{5,}$/.test(String(slot || ''));
       React.useEffect(() => {
         if (!hasValidSlot) return undefined;
@@ -228,6 +232,20 @@
         })
       );
     };
+
+    const AdvertisementSection = () => React.createElement(
+      'aside',
+      { 'aria-labelledby': 'advertisement-heading', className: 'mx-auto max-w-7xl px-5 pb-7 sm:px-8' },
+      React.createElement('div', {
+        className: 'rounded-2xl border border-dashed p-6 text-center',
+        style: { borderColor: 'var(--line)', background: 'var(--surface)' }
+      },
+        React.createElement('h2', { id: 'advertisement-heading', className: 'text-xs font-semibold uppercase tracking-[.16em] text-gray-500' }, 'Advertisement'),
+        ADSENSE_AD_SLOT_ID
+          ? React.createElement(AdSenseAd, { client: ADSENSE_CLIENT_ID, slot: ADSENSE_AD_SLOT_ID })
+          : React.createElement('p', { className: 'mt-2 text-sm text-gray-500' }, 'Ad space reserved. Ads stay disabled until a numeric AdSense ad-unit slot ID is configured.')
+      )
+    );
 
     // Main App component that manages navigation and workspace preferences
     function App() {
@@ -327,9 +345,8 @@
             )
           )
         ),
-        React.createElement(AdSenseAd, { slot: "ca-pub-5058994010586674" }),
         React.createElement('main', { className: "mx-auto max-w-7xl px-5 py-8 sm:px-8 sm:py-12" }, renderTool()),
-        React.createElement(AdSenseAd, { slot: "ca-pub-5058994010586674" }),
+        React.createElement(AdvertisementSection),
         React.createElement('footer', { className: "mx-auto max-w-7xl border-t border-[#e9e9e6] px-5 py-7 text-center text-sm text-[#858b86] sm:px-8" }, '© ', new Date().getFullYear(), ' DevTools Hub. All rights reserved.')
       );
     }
@@ -424,7 +441,6 @@
           ),
           'Back to Tools'
         ),
-        React.createElement(AdSenseAd, { slot: "ca-pub-5058994010586674" }),
         children
       );
     };
@@ -1793,7 +1809,7 @@
       };
 
       const previewAI = async () => {
-        if (isGenerating || isPreviewingAI) return;
+        if (!PAID_VOICE_GENERATION_ENABLED || isGenerating || isPreviewingAI) return;
         setVoiceError('');
         setAiPreviewUrl('');
         setIsPreviewingAI(true);
@@ -1812,6 +1828,10 @@
       };
 
       const generateAudio = async () => {
+        if (!PAID_VOICE_GENERATION_ENABLED) {
+          setVoiceError('Paid AI voice generation is disabled by the $0 spending cap.');
+          return;
+        }
         const trimmedText = text.trim();
         if (!trimmedText) { setVoiceError('Enter text before generating audio.'); return; }
         if (trimmedText.length > maxCharacters) { setVoiceError(`Keep your script within ${maxCharacters.toLocaleString()} characters.`); return; }
@@ -1836,8 +1856,8 @@
         React.createElement('div', { className: 'mb-6' },
           React.createElement('p', { className: 'mb-2 text-xs font-bold uppercase tracking-[.16em] text-violet-600' }, 'Audio & voice'),
           React.createElement('h2', { className: 'text-3xl font-bold tracking-tight text-gray-900' }, 'Text to Speech & AI Voice Artist'),
-          React.createElement('p', { className: 'mt-2 text-sm leading-6 text-gray-500' }, 'Preview speech with voices on your device, or create a real downloadable MP3 with Vercel AI Gateway. Generated text is sent to the speech provider.'),
-          React.createElement('div', { className: 'mt-4 rounded-xl border border-blue-200 bg-blue-50 p-3 text-xs leading-5 text-blue-900' }, 'Downloadable MP3 uses the OpenAI TTS-1 model through AI Gateway. The provider exposes six supported voices and speed control. Browser preview voices and pitch controls are device-specific and do not affect generated files.')),
+          React.createElement('p', { className: 'mt-2 text-sm leading-6 text-gray-500' }, 'Browser speech preview runs on your device. Paid AI voice previews and downloadable MP3s are disabled under the current $0 spending cap.'),
+          React.createElement('div', { className: 'mt-4 rounded-xl border border-blue-200 bg-blue-50 p-3 text-xs leading-5 text-blue-900' }, 'Paid AI generation is disabled to keep voice generation at $0. Browser speech preview remains available and does not send text to the speech provider.')),
         React.createElement('label', { htmlFor: 'voice-text', className: 'mb-2 block text-sm font-semibold text-gray-800' }, 'Your script'),
         React.createElement('textarea', { id: 'voice-text', value: text, maxLength: maxCharacters, onChange: (event) => setText(event.target.value), placeholder: 'Paste or write the text you want to turn into speech…', className: 'safe-wrap min-h-48 w-full resize-y rounded-2xl border border-gray-300 bg-white p-4 text-sm leading-6 shadow-sm focus:border-violet-500 focus:outline-none focus:ring-2 focus:ring-violet-100' }),
         React.createElement('div', { className: 'mt-2 flex flex-wrap items-center justify-between gap-3 text-xs text-gray-500' },
@@ -1857,9 +1877,9 @@
             React.createElement('p', { className: 'mt-2 text-xs text-gray-500' }, 'Speed is applied to generated speech and the browser preview.'))),
         React.createElement('div', { className: 'mb-6 rounded-2xl border border-violet-200 bg-violet-50/70 p-4' },
           React.createElement('div', { className: 'flex flex-wrap items-center justify-between gap-3' },
-            React.createElement('div', null, React.createElement('h3', { className: 'font-semibold text-gray-900' }, 'Preview selected AI voice'), React.createElement('p', { className: 'mt-1 text-xs text-gray-600' }, 'Creates a short sample using the selected model voice and speed; this uses provider generation.')),
+            React.createElement('div', null, React.createElement('h3', { className: 'font-semibold text-gray-900' }, 'Preview selected AI voice'), React.createElement('p', { className: 'mt-1 text-xs text-gray-600' }, 'AI voice previews are disabled under the $0 spending cap. Use the local browser preview below instead.')),
             React.createElement('div', { className: 'flex gap-2' },
-              React.createElement('button', { type: 'button', onClick: previewAI, disabled: isPreviewingAI || isGenerating, className: 'rounded-xl bg-violet-600 px-4 py-2.5 text-sm font-semibold text-white hover:bg-violet-700 disabled:opacity-50' }, isPreviewingAI ? 'Creating preview…' : 'Generate AI preview'),
+              React.createElement('button', { type: 'button', onClick: previewAI, disabled: !PAID_VOICE_GENERATION_ENABLED || isPreviewingAI || isGenerating, className: 'rounded-xl bg-violet-600 px-4 py-2.5 text-sm font-semibold text-white hover:bg-violet-700 disabled:opacity-50' }, isPreviewingAI ? 'Creating preview…' : 'Generate AI preview'),
               isPreviewingAI && React.createElement('button', { type: 'button', onClick: () => previewAbortControllerRef.current?.abort(), className: 'rounded-xl border border-gray-300 bg-white px-4 py-2.5 text-sm font-semibold' }, 'Cancel'))),
           isPreviewingAI && React.createElement('p', { className: 'mt-3 text-xs text-gray-600', role: 'status', 'aria-live': 'polite' }, 'Creating a short sample…'),
           aiPreviewUrl && React.createElement('audio', { controls: true, src: aiPreviewUrl, className: 'mt-4 w-full', 'aria-label': 'Selected AI voice sample' })),
@@ -1877,11 +1897,11 @@
             React.createElement('div', null, React.createElement('label', { htmlFor: 'preview-volume', className: 'text-xs font-medium text-gray-700' }, `Preview volume · ${volume.toFixed(1)}`), React.createElement('input', { id: 'preview-volume', type: 'range', min: '0', max: '1', step: '0.1', value: volume, onChange: (event) => setVolume(Number(event.target.value)), className: 'mt-1 w-full accent-violet-600' })))),
         React.createElement('div', { className: 'rounded-2xl border border-violet-200 bg-violet-50/70 p-4 sm:p-5' },
           React.createElement('h3', { className: 'font-semibold text-gray-900' }, 'Generate a downloadable MP3'),
-          React.createElement('p', { className: 'mt-1 text-xs leading-5 text-gray-600' }, 'Audio is generated on the server and returned as a real MPEG audio file. Maximum script length: 4,000 characters.'),
+          React.createElement('p', { className: 'mt-1 text-xs leading-5 text-gray-600' }, 'Disabled while the AI Gateway spending cap is $0. Browser speech preview remains available without sending text to the server.'),
           React.createElement('label', { htmlFor: 'voice-filename', className: 'mb-2 mt-4 block text-xs font-semibold text-gray-700' }, 'Download filename'),
           React.createElement('div', { className: 'flex items-center gap-2' }, React.createElement('input', { id: 'voice-filename', type: 'text', maxLength: 80, value: filename, onChange: (event) => setFilename(event.target.value), className: 'min-w-0 flex-1 rounded-xl border border-gray-300 bg-white px-3 py-2.5 text-sm' }), React.createElement('span', { className: 'text-sm text-gray-500' }, '.mp3')),
           React.createElement('div', { className: 'mt-4 flex flex-wrap gap-2' },
-            React.createElement('button', { type: 'button', onClick: generateAudio, disabled: isGenerating || isPreviewingAI || !text.trim() || text.length > maxCharacters, className: 'rounded-xl bg-violet-600 px-5 py-3 text-sm font-semibold text-white shadow-sm hover:bg-violet-700 disabled:cursor-not-allowed disabled:opacity-50' }, isGenerating ? 'Generating MP3…' : 'Generate voice MP3'),
+            React.createElement('button', { type: 'button', onClick: generateAudio, disabled: !PAID_VOICE_GENERATION_ENABLED || isGenerating || isPreviewingAI || !text.trim() || text.length > maxCharacters, className: 'rounded-xl bg-violet-600 px-5 py-3 text-sm font-semibold text-white shadow-sm hover:bg-violet-700 disabled:cursor-not-allowed disabled:opacity-50' }, isGenerating ? 'Generating MP3…' : 'Generate voice MP3'),
             isGenerating && React.createElement('button', { type: 'button', onClick: () => abortControllerRef.current?.abort(), className: 'rounded-xl border border-gray-300 bg-white px-4 py-3 text-sm font-semibold' }, 'Cancel')),
           isGenerating && React.createElement('p', { className: 'mt-3 text-xs text-gray-600', role: 'status', 'aria-live': 'polite' }, 'Creating audio. This can take a little while for longer scripts.'),
           voiceError && React.createElement('p', { className: 'mt-3 text-sm text-amber-800', role: 'alert', 'aria-live': 'polite' }, voiceError),
