@@ -6,9 +6,12 @@
     "dev": "vite --host 0.0.0.0",
     "dev:vercel": "npx vercel dev",
     "build": "vite build",
-    "preview": "vite preview --host 0.0.0.0"
+    "preview": "vite preview --host 0.0.0.0",
+    "test": "node --test"
   },
   "dependencies": {
+    "@upstash/ratelimit": "^2.2.1",
+    "@upstash/redis": "^1.41.0",
     "ai": "^7.0.173",
     "pdf-lib": "^1.17.1"
   },
