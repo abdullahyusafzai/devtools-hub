@@ -3,9 +3,9 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="theme-color" content="#f7f7f5">
-  <meta name="description" content="A thoughtfully organized toolkit for everyday digital tasks. Fast, free browser-based utilities for text, images, and more.">
-  <title>DevTools Hub — Tools for your everyday workflow</title>
+  <meta name="theme-color" content="#0b1020">
+  <meta name="description" content="Create, convert, edit, write, and simplify digital tasks with the DevTools Hub workspace.">
+  <title>DevTools Hub — Your digital utility workspace</title>
   <!-- Load React and ReactDOM from CDN -->
   <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
   <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
@@ -27,22 +27,37 @@
     };
   </script>
   <style>
-    body { font-family: 'Inter', sans-serif; background: #f7f7f5; }
+    :root { color-scheme: light; --page: #f5f6fb; --surface: #ffffff; --surface-muted: #edf0f8; --ink: #151a2d; --muted: #66708a; --line: #e1e5f0; --accent: #6558f5; --accent-soft: #eeedff; }
+    [data-theme="dark"] { color-scheme: dark; --page: #0b1020; --surface: #11182b; --surface-muted: #18223a; --ink: #f4f6ff; --muted: #a5afc8; --line: #28334d; --accent: #8b82ff; --accent-soft: #242345; }
+    html { scroll-behavior: smooth; }
+    body { font-family: 'Inter', sans-serif; background: var(--page); color: var(--ink); }
     * { box-sizing: border-box; }
-    button, input { font: inherit; }
-    button:focus-visible, input:focus-visible { outline: 3px solid rgba(16, 163, 127, .28); outline-offset: 3px; }
-    .tool-card { min-height: 154px; border: 1px solid #e9e9e6; box-shadow: 0 1px 2px rgba(16,24,40,.03); }
-    .tool-card:hover { transform: translateY(-3px); border-color: #d5e6df; box-shadow: 0 12px 28px rgba(24,44,36,.08); }
-    .tool-icon { background: #f1f5f2; color: #52665e; }
-    .tool-card:hover .tool-icon { background: #e5f4ed; color: #087f5b; }
+    button, input, textarea, select { font: inherit; }
+    button:focus-visible, input:focus-visible, textarea:focus-visible, select:focus-visible { outline: 3px solid color-mix(in srgb, var(--accent) 38%, transparent); outline-offset: 3px; }
+    #root > div { background: var(--page) !important; color: var(--ink) !important; }
+    header { background: color-mix(in srgb, var(--page) 88%, transparent) !important; border-color: var(--line) !important; }
+    .tool-card { min-height: 154px; border: 1px solid var(--line); background: var(--surface); box-shadow: 0 8px 24px rgba(21, 26, 45, .035); }
+    .tool-card:hover { transform: translateY(-3px); border-color: color-mix(in srgb, var(--accent) 55%, var(--line)); box-shadow: 0 18px 40px rgba(50, 46, 125, .12); }
+    .tool-icon { background: var(--accent-soft); color: var(--accent); }
+    .tool-card:hover .tool-icon { background: var(--accent); color: #fff; }
     .category-chip { transition: background .18s ease, color .18s ease, border-color .18s ease; }
-    @media (prefers-reduced-motion: reduce) { *, *::before, *::after { scroll-behavior: auto !important; transition-duration: .01ms !important; } }
+    [data-theme="dark"] .bg-white, [data-theme="dark"] .bg-gray-50 { background: var(--surface) !important; }
+    [data-theme="dark"] .bg-gray-100, [data-theme="dark"] .bg-gray-200 { background: var(--surface-muted) !important; }
+    [data-theme="dark"] .text-gray-900, [data-theme="dark"] .text-gray-800, [data-theme="dark"] .text-gray-700, [data-theme="dark"] .text-gray-600, [data-theme="dark"] .text-gray-500 { color: var(--muted) !important; }
+    [data-theme="dark"] .border-gray-300, [data-theme="dark"] .border-gray-200 { border-color: var(--line) !important; }
+    [data-theme="dark"] footer { border-color: var(--line) !important; color: var(--muted) !important; }
+    .snake-board { width: min(100%, 400px); aspect-ratio: 1; touch-action: none; }
+    .safe-wrap { overflow-wrap: anywhere; }
+    @media (prefers-reduced-motion: reduce) { *, *::before, *::after { scroll-behavior: auto !important; transition-duration: .01ms !important; animation-duration: .01ms !important; } }
   </style>
 </head>
 <body>
 
   <!-- The root div for our React application -->
   <div id="root"></div>
+
+  <script src="/catalog.js"></script>
+  <script src="/snake-game.js"></script>
 
   <!-- All of the React application code goes here -->
   <script>
@@ -62,6 +77,49 @@
       { id: 'image-compressor', name: 'Image Compressor', svg: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10S17.523 2 12 2zm-4 4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v4a2 2 0 0 1-2 2H10a2 2 0 0 1-2-2V6zm4 2a.5.5 0 0 1 .5.5v2a.5.5 0 0 1-.5.5h-2a.5.5 0 0 1-.5-.5v-2a.5.5 0 0 1 .5-.5h2z"/></svg>` },
       { id: 'image-cropper', name: 'Simple Image Cropper', svg: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M17 19H5a2 2 0 0 1-2-2V5h2v12h12v2zm-2-4V3h2v12h-2zm-2 0V3h2v12h-2zM9 13v-2H7v-2h2V7h2v2h2v2h-2v2h2v2h-2v-2h-2z"/></svg>` },
       { id: 'text-to-speech', name: 'Text to Speech', svg: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2a10 10 0 1 0 10 10A10 10 0 0 0 12 2zm-2 15a1 1 0 0 1-1-1V8a1 1 0 0 1 2 0v8a1 1 0 0 1-1 1zm4 0a1 1 0 0 1-1-1V8a1 1 0 0 1 2 0v8a1 1 0 0 1-1 1z"/></svg>` },
+    ];
+
+    const categories = ['All Tools', 'AI Tools', 'Text & Writing', 'PDF & Documents', 'Images & Design', 'Audio & Voice', 'Video', 'QR Codes & Links', 'Developer Tools', 'Calculators & Converters', 'Productivity & Text', 'SEO & Marketing', 'Business & Careers', 'Education', 'Security & Privacy', 'Games & Entertainment'];
+    const categoryById = {
+      'qr-code-generator': 'QR Codes & Links',
+      'case-converter': 'Productivity & Text',
+      'word-character-counter': 'Productivity & Text',
+      'dummy-text-generator': 'Productivity & Text',
+      'password-generator': 'Security & Privacy',
+      'url-encoder-decoder': 'Developer Tools',
+      'temperature-converter': 'Calculators & Converters',
+      'image-converter': 'Images & Design',
+      'image-resizer': 'Images & Design',
+      'image-compressor': 'Images & Design',
+      'image-cropper': 'Images & Design',
+      'text-to-speech': 'Audio & Voice'
+    };
+    const toolDescriptions = {
+      'qr-code-generator': 'Create a scannable code from text or a link.',
+      'case-converter': 'Switch between uppercase, lowercase, and title case.',
+      'word-character-counter': 'Count words, characters, and lines instantly.',
+      'dummy-text-generator': 'Generate placeholder copy for your next project.',
+      'password-generator': 'Create a strong random password in your browser.',
+      'url-encoder-decoder': 'Encode or decode URL-safe text locally.',
+      'temperature-converter': 'Convert temperatures between common scales.',
+      'image-converter': 'Convert an image to a supported file format.',
+      'image-resizer': 'Resize an image to fit your needs.',
+      'image-compressor': 'Reduce image file size in your browser.',
+      'image-cropper': 'Crop an image with a touch-friendly selection.',
+      'text-to-speech': 'Preview speech in-browser or generate a downloadable MP3.'
+    };
+    const existingToolNames = new Set(tools.map((tool) => tool.name.toLowerCase()));
+    const catalogTools = [
+      ...tools.map((tool) => ({
+        ...tool,
+        category: categoryById[tool.id] || 'Productivity & Text',
+        description: toolDescriptions[tool.id] || 'A practical browser-based utility.',
+        keywords: tool.id === 'text-to-speech' ? 'ai voice artist downloadable text to speech mp3 voiceover narration convert audio speak' : tool.id === 'url-encoder-decoder' ? 'url encode decode developer links' : tool.id,
+        available: true
+      })),
+      ...window.plannedToolCatalog.filter((tool) => !existingToolNames.has(tool.name.toLowerCase())),
+      { id: 'ai-voice-artist', name: 'AI Voice Artist', category: 'Audio & Voice', description: 'Generate and download real MP3 voiceovers using supported AI voices.', keywords: 'text speech downloadable mp3 voice narration convert', available: true, svg: tools.find((tool) => tool.id === 'text-to-speech').svg },
+      { id: 'snake-game', name: 'Classic Snake Game', category: 'Games & Entertainment', description: 'Play a responsive grid-based Snake game with touch and keyboard controls.', keywords: 'snake game nokia classic games play', available: true, svg: tools[0].svg }
     ];
 
     const copyTextToClipboard = async (value) => {
@@ -112,42 +170,70 @@
 
     // Reusable AdSenseAd component
     const AdSenseAd = ({ slot, client = "ca-pub-5058994010586674" }) => {
+      const hasValidSlot = /^\d{5,}$/.test(String(slot || ''));
       React.useEffect(() => {
+        if (!hasValidSlot) return;
         try {
           if (typeof window !== 'undefined' && window.adsbygoogle) {
             (window.adsbygoogle = window.adsbygoogle || []).push({});
           }
-        } catch (e) {
-          console.error("AdSense script failed to load", e);
+        } catch (error) {
+          console.error("AdSense script failed to load", error);
         }
-      }, []);
+      }, [hasValidSlot]);
 
-      return React.createElement(
-        'div',
-        { className: "flex justify-center p-2 my-4" },
-        React.createElement(
-          'ins',
-          {
-            className: "adsbygoogle",
-            style: { display: 'block', textAlign: 'center' },
-            'data-ad-client': client,
-            'data-ad-slot': slot,
-            'data-ad-format': "auto",
-            'data-full-width-responsive': "true"
-          }
-        )
+      if (!hasValidSlot) return null;
+      return React.createElement('div', { className: "flex justify-center p-2 my-4" },
+        React.createElement('ins', {
+          className: "adsbygoogle",
+          style: { display: 'block', textAlign: 'center' },
+          'data-ad-client': client,
+          'data-ad-slot': slot,
+          'data-ad-format': "auto",
+          'data-full-width-responsive': "true"
+        })
       );
     };
 
-    // Main App component that manages page state
+    // Main App component that manages navigation and workspace preferences
     function App() {
-      const [currentPage, setCurrentPage] = React.useState('home');
+      const initialPage = window.location.hash.replace(/^#\/?/, '') || 'home';
+      const [currentPage, setCurrentPageState] = React.useState(initialPage);
+      const [theme, setTheme] = React.useState(() => {
+        try { return window.localStorage.getItem('devtools-hub-theme') || 'dark'; } catch { return 'dark'; }
+      });
+      const [favorites, setFavorites] = React.useState(() => {
+        try { return JSON.parse(window.localStorage.getItem('devtools-hub-favorites') || '[]'); } catch { return []; }
+      });
+      const [favoritesOnly, setFavoritesOnly] = React.useState(false);
 
-      // A simple function to render the correct tool component based on the active state
+      const setCurrentPage = (page) => {
+        setCurrentPageState(page);
+        const nextUrl = page === 'home' ? `${window.location.pathname}${window.location.search}` : `#/${page}`;
+        window.history.pushState(null, '', nextUrl);
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      };
+
+      React.useEffect(() => {
+        const syncPage = () => setCurrentPageState(window.location.hash.replace(/^#\/?/, '') || 'home');
+        window.addEventListener('popstate', syncPage);
+        return () => window.removeEventListener('popstate', syncPage);
+      }, []);
+
+      React.useEffect(() => {
+        document.documentElement.setAttribute('data-theme', theme);
+        document.querySelector('meta[name="theme-color"]')?.setAttribute('content', theme === 'dark' ? '#0b1020' : '#f5f6fb');
+        try { window.localStorage.setItem('devtools-hub-theme', theme); } catch {}
+      }, [theme]);
+
+      React.useEffect(() => {
+        try { window.localStorage.setItem('devtools-hub-favorites', JSON.stringify(favorites)); } catch {}
+      }, [favorites]);
+
       const renderTool = () => {
         switch (currentPage) {
           case 'home':
-            return React.createElement(HomePage, { setCurrentPage });
+            return React.createElement(HomePage, { setCurrentPage, favorites, setFavorites, favoritesOnly });
           case 'qr-code-generator':
             return React.createElement(ToolPage, { toolName: "QR Code Generator", setCurrentPage }, React.createElement(QRCodeGenerator));
           case 'case-converter':
@@ -171,9 +257,12 @@
           case 'image-cropper':
             return React.createElement(ToolPage, { toolName: "Simple Image Cropper", setCurrentPage }, React.createElement(SimpleImageCropper));
           case 'text-to-speech':
-            return React.createElement(ToolPage, { toolName: "Text to Speech", setCurrentPage }, React.createElement(TextToSpeech));
+          case 'ai-voice-artist':
+            return React.createElement(ToolPage, { toolName: currentPage === 'ai-voice-artist' ? "AI Voice Artist" : "Text to Speech & AI Voice Artist", setCurrentPage }, React.createElement(TextToSpeech));
+          case 'snake-game':
+            return React.createElement(ToolPage, { toolName: "Classic Snake Game", setCurrentPage }, React.createElement(window.SnakeGame));
           default:
-            return React.createElement(HomePage, { setCurrentPage });
+            return React.createElement(HomePage, { setCurrentPage, favorites, setFavorites, favoritesOnly });
         }
       };
 
@@ -185,73 +274,96 @@
           { className: "sticky top-0 z-10 border-b border-[#e9e9e6] bg-[#f7f7f5]/90 backdrop-blur-md" },
           React.createElement(
             'div',
-            { className: "mx-auto flex max-w-7xl items-center justify-between px-5 py-4 sm:px-8" },
+            { className: "mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-3 px-5 py-3 sm:px-8" },
             React.createElement(
               'button',
-              { onClick: () => setCurrentPage('home'), className: "flex items-center gap-3 rounded-xl text-left", 'aria-label': 'DevTools Hub home' },
-              React.createElement('span', { className: "flex h-9 w-9 items-center justify-center rounded-xl bg-[#10a37f] text-sm font-bold text-white" }, 'D'),
-              React.createElement('span', { className: "text-[15px] font-semibold tracking-tight" }, 'devtools', React.createElement('span', { className: "text-[#8b918c]" }, '.hub'))
+              { onClick: () => { setFavoritesOnly(false); setCurrentPage('home'); }, className: "flex items-center gap-3 rounded-xl text-left", 'aria-label': 'DevTools Hub home' },
+              React.createElement('span', { className: "flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-violet-600 to-blue-500 text-sm font-bold text-white shadow-lg shadow-violet-500/20" }, 'D'),
+              React.createElement('span', { className: "text-[15px] font-semibold tracking-tight" }, 'devtools', React.createElement('span', { className: "text-[#8b91a6]" }, '.hub'))
             ),
-            React.createElement('span', { className: "hidden items-center gap-2 text-xs font-medium text-[#747b76] sm:flex" }, React.createElement('span', { className: "h-2 w-2 rounded-full bg-[#10a37f]" }), 'Free browser tools')
+            React.createElement('nav', { className: 'flex items-center gap-2', 'aria-label': 'Main navigation' },
+              React.createElement('button', { type: 'button', onClick: () => { setFavoritesOnly(false); setCurrentPage('home'); }, className: 'rounded-xl px-3 py-2 text-sm font-medium text-gray-600 hover:bg-violet-50 hover:text-violet-700' }, 'Explore'),
+              React.createElement('button', { type: 'button', onClick: () => { setFavoritesOnly(true); setCurrentPage('home'); }, className: 'rounded-xl px-3 py-2 text-sm font-medium text-gray-600 hover:bg-violet-50 hover:text-violet-700', 'aria-pressed': favoritesOnly }, `Favorites${favorites.length ? ` (${favorites.length})` : ''}`),
+              React.createElement('button', { type: 'button', onClick: () => setTheme(theme === 'dark' ? 'light' : 'dark'), className: 'rounded-xl border border-gray-200 bg-white px-3 py-2 text-sm font-medium shadow-sm hover:border-violet-300', 'aria-label': `Switch to ${theme === 'dark' ? 'light' : 'dark'} theme` }, theme === 'dark' ? 'Light mode' : 'Dark mode')
+            )
           )
         ),
         React.createElement(AdSenseAd, { slot: "ca-pub-5058994010586674" }),
-        React.createElement(
-          'main',
-          { className: "mx-auto max-w-7xl px-5 py-10 sm:px-8 sm:py-14" },
-          renderTool()
-        ),
+        React.createElement('main', { className: "mx-auto max-w-7xl px-5 py-8 sm:px-8 sm:py-12" }, renderTool()),
         React.createElement(AdSenseAd, { slot: "ca-pub-5058994010586674" }),
-        React.createElement(
-          'footer',
-          { className: "mx-auto max-w-7xl border-t border-[#e9e9e6] px-5 py-7 text-center text-sm text-[#858b86] sm:px-8" },
-          '© ', new Date().getFullYear(), ' DevTools Hub. All rights reserved.'
-        )
+        React.createElement('footer', { className: "mx-auto max-w-7xl border-t border-[#e9e9e6] px-5 py-7 text-center text-sm text-[#858b86] sm:px-8" }, '© ', new Date().getFullYear(), ' DevTools Hub. All rights reserved.')
       );
     }
 
-    // Reusable component for displaying tool cards on the home page
-    const ToolCard = ({ id, name, svg, onClick }) => {
-      const svgHtml = { __html: svg };
-      const category = id.includes('image') ? 'Image' : ['case-converter', 'word-character-counter', 'dummy-text-generator', 'text-to-speech'].includes(id) ? 'Text' : 'Utilities';
-      const description = ({ 'qr-code-generator': 'Create a scannable code from text or a link.', 'case-converter': 'Switch between uppercase, lowercase, and more.', 'word-character-counter': 'Get an instant count of words and characters.', 'dummy-text-generator': 'Generate placeholder copy for your next project.', 'password-generator': 'Create a strong password in a click.', 'url-encoder-decoder': 'Encode or decode URL-safe text.', 'temperature-converter': 'Convert temperatures between common scales.', 'image-converter': 'Convert images to a different file format.', 'image-resizer': 'Resize an image to fit your needs.', 'image-compressor': 'Make image files lighter and easier to share.', 'image-cropper': 'Crop an image to the composition you want.', 'text-to-speech': 'Listen to written text with speech synthesis.' })[id] || 'A handy tool for your everyday workflow.';
-      return React.createElement(
-        'button',
-        { onClick: () => onClick(id), className: "tool-card group flex flex-col items-start rounded-2xl bg-white p-5 text-left transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-[#10a37f]", 'aria-label': `${name}. ${description}` },
-        React.createElement('div', { className: "tool-icon flex h-11 w-11 items-center justify-center rounded-xl transition-colors", 'aria-hidden': 'true' },
-          React.createElement('div', { className: "h-6 w-6", dangerouslySetInnerHTML: svgHtml })
-        ),
-        React.createElement('h3', { className: "mt-4 text-[15px] font-semibold tracking-tight text-[#252a26]" }, name),
-        React.createElement('p', { className: "mt-1.5 text-left text-[13px] leading-5 text-[#818782]" }, description)
+    // Reusable, accessible catalog card
+    const ToolCard = ({ tool, onClick, isFavorite, onToggleFavorite }) => {
+      const iconMarkup = { __html: tool.svg || tools[0].svg };
+      return React.createElement('article', { className: 'tool-card group relative flex min-h-[178px] flex-col rounded-2xl p-4 transition-all sm:p-5' },
+        React.createElement('button', { type: 'button', onClick: () => onToggleFavorite(tool.id), className: 'absolute right-3 top-3 rounded-lg p-2 text-gray-400 hover:bg-violet-50 hover:text-violet-600', 'aria-label': `${isFavorite ? 'Remove' : 'Add'} ${tool.name} ${isFavorite ? 'from' : 'to'} favorites`, 'aria-pressed': isFavorite },
+          React.createElement('svg', { className: 'h-5 w-5', viewBox: '0 0 24 24', fill: isFavorite ? 'currentColor' : 'none', stroke: 'currentColor', strokeWidth: '1.8', 'aria-hidden': 'true' }, React.createElement('path', { d: 'm12 3 2.7 5.5 6.1.9-4.4 4.3 1 6.1-5.4-2.9-5.4 2.9 1-6.1-4.4-4.3 6.1-.9L12 3Z', strokeLinejoin: 'round' }))),
+        React.createElement(tool.available ? 'button' : 'div', {
+          type: tool.available ? 'button' : undefined,
+          onClick: tool.available ? () => onClick(tool.id) : undefined,
+          disabled: tool.available ? undefined : true,
+          className: `flex h-full w-full flex-1 flex-col items-start rounded-xl text-left ${tool.available ? 'cursor-pointer focus-visible:outline-none' : 'cursor-default'}`,
+          'aria-label': `${tool.name}. ${tool.description}${tool.available ? '' : ' In development.'}`
+        },
+          React.createElement('div', { className: 'flex w-full items-center justify-between gap-2 pr-9' },
+            React.createElement('span', { className: 'tool-icon flex h-11 w-11 shrink-0 items-center justify-center rounded-xl transition-colors', 'aria-hidden': 'true' }, React.createElement('span', { className: 'h-6 w-6', dangerouslySetInnerHTML: iconMarkup })),
+            React.createElement('span', { className: `rounded-full px-2.5 py-1 text-[10px] font-semibold ${tool.available ? 'bg-emerald-50 text-emerald-700' : 'bg-amber-50 text-amber-800'}` }, tool.available ? 'Ready' : 'In development')),
+          React.createElement('h3', { className: 'mt-4 text-[15px] font-semibold tracking-tight text-gray-900' }, tool.name),
+          React.createElement('p', { className: 'mt-1.5 text-left text-[13px] leading-5 text-gray-500' }, tool.description),
+          React.createElement('span', { className: 'mt-auto pt-3 text-[11px] font-medium text-violet-600' }, tool.category)
+        )
       );
     };
 
     // Home Page Component
-    const HomePage = ({ setCurrentPage }) => {
+    const HomePage = ({ setCurrentPage, favorites, setFavorites, favoritesOnly }) => {
       const [query, setQuery] = React.useState('');
-      const [category, setCategory] = React.useState('All tools');
-      const categories = ['All tools', 'Text', 'Image', 'Utilities'];
-      const categoryFor = id => id.includes('image') ? 'Image' : ['case-converter', 'word-character-counter', 'dummy-text-generator', 'text-to-speech'].includes(id) ? 'Text' : 'Utilities';
-      const visibleTools = tools.filter(tool => {
-        const matchesQuery = `${tool.name} ${categoryFor(tool.id)}`.toLowerCase().includes(query.trim().toLowerCase());
-        return matchesQuery && (category === 'All tools' || categoryFor(tool.id) === category);
-      });
-      return React.createElement(
-        'section', { 'aria-labelledby': 'welcome-heading' },
-        React.createElement('div', { className: "mx-auto mb-10 max-w-3xl text-center" },
-          React.createElement('p', { className: "mb-4 text-xs font-semibold uppercase tracking-[.18em] text-[#10a37f]" }, 'A little more focus, a lot less busywork'),
-          React.createElement('h1', { id: 'welcome-heading', className: "text-4xl font-semibold tracking-[-.045em] text-[#202522] sm:text-5xl" }, 'The right tool, right here.'),
-          React.createElement('p', { className: "mx-auto mt-4 max-w-xl text-base leading-7 text-[#777e78]" }, 'Simple, useful utilities for the small tasks that keep your day moving.'),
-          React.createElement('div', { className: "relative mx-auto mt-7 max-w-xl" },
-            React.createElement('svg', { className: "absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-[#909791]", viewBox: '0 0 24 24', fill: 'none', stroke: 'currentColor', 'aria-hidden': 'true' }, React.createElement('circle', { cx: '11', cy: '11', r: '7', strokeWidth: '1.8' }), React.createElement('path', { d: 'm16 16 4 4', strokeWidth: '1.8', strokeLinecap: 'round' })),
-            React.createElement('input', { type: 'search', value: query, onChange: event => setQuery(event.target.value), placeholder: 'Find a tool…', 'aria-label': 'Search tools', className: "w-full rounded-2xl border border-[#e5e7e3] bg-white py-4 pl-12 pr-4 text-sm shadow-[0_3px_10px_rgba(0,0,0,.025)] placeholder:text-[#a0a6a1] focus:border-[#10a37f] focus:outline-none" })
+      const [category, setCategory] = React.useState('All Tools');
+      const [showPlanned, setShowPlanned] = React.useState(false);
+      const ignoreWords = new Set(['i', 'want', 'to', 'a', 'the', 'my', 'into', 'with', 'for', 'please', 'me', 'can', 'you', 'how', 'do', 'tool']);
+      const queryWords = query.toLowerCase().trim().split(/[^a-z0-9]+/).filter((word) => word && !ignoreWords.has(word));
+      const includeDevelopment = showPlanned || queryWords.length > 0 || category !== 'All Tools' || favoritesOnly;
+      const visibleTools = catalogTools.filter((tool) => {
+        const searchText = `${tool.name} ${tool.category} ${tool.description} ${tool.keywords || ''}`.toLowerCase();
+        const searchTokens = searchText.split(/[^a-z0-9]+/).filter(Boolean);
+        const matchesQuery = queryWords.every((word) => searchTokens.some((token) => token.includes(word) || word.includes(token)));
+        const matchesCategory = category === 'All Tools' || tool.category === category || (category === 'Text & Writing' && tool.category === 'Productivity & Text');
+        const matchesFavorite = !favoritesOnly || favorites.includes(tool.id);
+        return (includeDevelopment || tool.available) && matchesQuery && matchesCategory && matchesFavorite;
+      }).sort((left, right) => Number(right.available) - Number(left.available));
+      const toggleFavorite = (id) => setFavorites((current) => current.includes(id) ? current.filter((item) => item !== id) : [...current, id]);
+
+      return React.createElement('section', { 'aria-labelledby': 'welcome-heading' },
+        React.createElement('div', { className: 'relative mx-auto mb-10 max-w-4xl overflow-hidden rounded-[2rem] border border-violet-200/60 bg-white px-5 py-10 text-center shadow-[0_24px_70px_rgba(73,66,177,.10)] sm:px-10 sm:py-14' },
+          React.createElement('div', { className: 'pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,rgba(123,103,255,.12),transparent_48%),radial-gradient(ellipse_at_bottom_left,rgba(49,167,235,.10),transparent_42%)]', 'aria-hidden': 'true' }),
+          React.createElement('div', { className: 'relative' },
+            React.createElement('p', { className: 'mb-4 text-xs font-bold uppercase tracking-[.18em] text-violet-600' }, 'Your digital utility workspace'),
+            React.createElement('h1', { id: 'welcome-heading', className: 'mx-auto max-w-3xl text-4xl font-bold leading-[1.08] tracking-[-.045em] text-gray-900 sm:text-6xl' }, 'Every tool you need. ', React.createElement('span', { className: 'bg-gradient-to-r from-violet-600 to-blue-500 bg-clip-text text-transparent' }, 'One powerful workspace.')),
+            React.createElement('p', { className: 'mx-auto mt-5 max-w-2xl text-base leading-7 text-gray-500 sm:text-lg' }, 'Create, convert, edit, write, generate, and simplify your digital tasks — all in one place.'),
+            React.createElement('div', { className: 'relative mx-auto mt-8 max-w-2xl' },
+              React.createElement('svg', { className: 'absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-violet-500', viewBox: '0 0 24 24', fill: 'none', stroke: 'currentColor', 'aria-hidden': 'true' }, React.createElement('circle', { cx: '11', cy: '11', r: '7', strokeWidth: '1.8' }), React.createElement('path', { d: 'm16 16 4 4', strokeWidth: '1.8', strokeLinecap: 'round' })),
+              React.createElement('input', { type: 'search', value: query, onChange: (event) => setQuery(event.target.value), placeholder: 'Search tools or describe what you want to do…', 'aria-label': 'Search tools or describe a task', className: 'w-full rounded-2xl border border-gray-200 bg-white py-4 pl-12 pr-4 text-sm shadow-[0_8px_28px_rgba(40,43,80,.08)] placeholder:text-gray-400 focus:border-violet-400 focus:outline-none' }),
+              query && React.createElement('p', { className: 'mt-2 text-left text-xs text-gray-500', 'aria-live': 'polite' }, `${visibleTools.length} matching ${visibleTools.length === 1 ? 'tool' : 'tools'}; in-development items are labeled.`)
+            ),
+            React.createElement('div', { className: 'mt-5 flex flex-wrap justify-center gap-2 text-xs text-gray-500' },
+              React.createElement('span', { className: 'font-medium' }, 'Try:'),
+              ['Compress a PDF', 'Generate a QR code', 'Resize my image', 'Play Snake'].map((suggestion) => React.createElement('button', { key: suggestion, type: 'button', onClick: () => setQuery(suggestion), className: 'rounded-full border border-gray-200 bg-white/80 px-3 py-1.5 hover:border-violet-300 hover:text-violet-700' }, suggestion)))
           )
         ),
-        React.createElement('div', { className: "mb-5 flex flex-wrap items-center justify-between gap-4" },
-          React.createElement('div', { className: "flex flex-wrap gap-2", role: 'group', 'aria-label': 'Filter tools by category' }, categories.map(item => React.createElement('button', { key: item, type: 'button', onClick: () => setCategory(item), 'aria-pressed': category === item, className: `category-chip rounded-full border px-4 py-2 text-xs font-medium ${category === item ? 'border-[#242a26] bg-[#242a26] text-white' : 'border-[#e5e7e3] bg-white text-[#68716a] hover:border-[#c7d0ca]'}` }, item))),
-          React.createElement('p', { className: "text-xs text-[#8b918c]", 'aria-live': 'polite' }, `${visibleTools.length} ${visibleTools.length === 1 ? 'tool' : 'tools'}`)
-        ),
-        visibleTools.length ? React.createElement('div', { className: "grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4" }, visibleTools.map(tool => React.createElement(ToolCard, { key: tool.id, id: tool.id, name: tool.name, svg: tool.svg, onClick: setCurrentPage }))) : React.createElement('div', { className: "rounded-2xl border border-dashed border-[#dfe3df] bg-white px-6 py-16 text-center" }, React.createElement('p', { className: "font-medium text-[#3b423d]" }, 'No tools found'), React.createElement('p', { className: "mt-2 text-sm text-[#858c86]" }, 'Try another search or choose a different category.'))
+        React.createElement('div', { className: 'mb-5 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between' },
+          React.createElement('div', null,
+            React.createElement('h2', { className: 'text-xl font-bold tracking-tight text-gray-900' }, favoritesOnly ? 'Your favorites' : category === 'All Tools' ? 'Popular tools' : category),
+            React.createElement('p', { className: 'mt-1 text-sm text-gray-500' }, favoritesOnly ? 'Your saved shortcuts on this device.' : query ? 'Search results from available and planned tools.' : 'A focused set of useful tools, ready to use.')),
+          React.createElement('button', { type: 'button', onClick: () => setShowPlanned((value) => !value), 'aria-pressed': showPlanned, className: 'self-start rounded-xl border border-gray-200 bg-white px-3 py-2 text-xs font-semibold text-gray-600 hover:border-violet-300 sm:self-auto' }, showPlanned ? 'Hide in-development tools' : 'Browse full catalog')),
+        React.createElement('div', { className: 'mb-5 -mx-1 overflow-x-auto pb-2' },
+          React.createElement('div', { className: 'flex min-w-max gap-2 px-1', role: 'group', 'aria-label': 'Filter tools by category' }, categories.map((item) => React.createElement('button', { key: item, type: 'button', onClick: () => setCategory(item), 'aria-pressed': category === item, className: `category-chip rounded-full border px-4 py-2.5 text-xs font-semibold ${category === item ? 'border-violet-600 bg-violet-600 text-white shadow-sm' : 'border-gray-200 bg-white text-gray-600 hover:border-violet-300 hover:text-violet-700'}` }, item)))),
+        React.createElement('div', { className: 'mb-4 flex items-center justify-between gap-3' },
+          React.createElement('p', { className: 'text-xs text-gray-500', 'aria-live': 'polite' }, `${visibleTools.length} ${visibleTools.length === 1 ? 'tool' : 'tools'}${includeDevelopment ? ' in catalog' : ' ready to use'}`),
+          React.createElement('span', { className: 'inline-flex items-center gap-2 text-[11px] text-gray-500' }, React.createElement('span', { className: 'h-2 w-2 rounded-full bg-emerald-500' }), 'Ready', React.createElement('span', { className: 'ml-2 h-2 w-2 rounded-full bg-amber-400' }), 'In development')),
+        visibleTools.length ? React.createElement('div', { className: 'grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4' }, visibleTools.map((tool) => React.createElement(ToolCard, { key: tool.id, tool, onClick: setCurrentPage, isFavorite: favorites.includes(tool.id), onToggleFavorite: toggleFavorite }))) : React.createElement('div', { className: 'rounded-2xl border border-dashed border-gray-300 bg-white px-6 py-16 text-center' }, React.createElement('p', { className: 'font-semibold text-gray-800' }, favoritesOnly ? 'No favorites yet' : 'No tools found'), React.createElement('p', { className: 'mt-2 text-sm text-gray-500' }, favoritesOnly ? 'Use the star on any tool card to save it here.' : 'Try another search or browse the full catalog.'))
       );
     };
 
@@ -1370,27 +1482,30 @@
       );
     };
 
-    // Text to Speech Component
+    // Text to Speech and downloadable AI Voice Artist
     const TextToSpeech = () => {
       const [text, setText] = React.useState('');
       const [voices, setVoices] = React.useState([]);
       const [selectedVoice, setSelectedVoice] = React.useState(null);
-      const [pitch, setPitch] = React.useState(1);
+      const [providerVoice, setProviderVoice] = React.useState('alloy');
       const [rate, setRate] = React.useState(1);
+      const [pitch, setPitch] = React.useState(1);
       const [volume, setVolume] = React.useState(1);
       const [isSpeaking, setIsSpeaking] = React.useState(false);
+      const [isGenerating, setIsGenerating] = React.useState(false);
       const [voiceError, setVoiceError] = React.useState('');
+      const [audioUrl, setAudioUrl] = React.useState('');
+      const [filename, setFilename] = React.useState('my-voiceover');
+      const abortControllerRef = React.useRef(null);
+      const maxCharacters = 4000;
 
       React.useEffect(() => {
-        if (!('speechSynthesis' in window)) {
-          setVoiceError('Speech playback is not supported by this browser.');
-          return;
-        }
+        if (!('speechSynthesis' in window)) return undefined;
         const synth = window.speechSynthesis;
         const loadVoices = () => {
           const availableVoices = synth.getVoices();
           setVoices(availableVoices);
-          setSelectedVoice(current => current || availableVoices[0] || null);
+          setSelectedVoice((current) => current || availableVoices[0] || null);
         };
         loadVoices();
         synth.addEventListener('voiceschanged', loadVoices);
@@ -1400,15 +1515,14 @@
         };
       }, []);
 
+      React.useEffect(() => {
+        if (!audioUrl) return undefined;
+        return () => URL.revokeObjectURL(audioUrl);
+      }, [audioUrl]);
+
       const handleSpeak = () => {
-        if (!text.trim()) {
-          setVoiceError('Enter text before starting playback.');
-          return;
-        }
-        if (!('speechSynthesis' in window) || !('SpeechSynthesisUtterance' in window)) {
-          setVoiceError('Speech playback is not supported by this browser.');
-          return;
-        }
+        if (!text.trim()) { setVoiceError('Enter some text before starting playback.'); return; }
+        if (!('speechSynthesis' in window) || !('SpeechSynthesisUtterance' in window)) { setVoiceError('Browser speech preview is not supported here.'); return; }
         setVoiceError('');
         window.speechSynthesis.cancel();
         const utterance = new SpeechSynthesisUtterance(text.trim());
@@ -1418,9 +1532,9 @@
         utterance.volume = volume;
         utterance.onstart = () => setIsSpeaking(true);
         utterance.onend = () => setIsSpeaking(false);
-        utterance.onerror = event => {
+        utterance.onerror = (event) => {
           setIsSpeaking(false);
-          if (event.error !== 'canceled' && event.error !== 'interrupted') setVoiceError('Playback could not start. Try another voice or browser.');
+          if (event.error !== 'canceled' && event.error !== 'interrupted') setVoiceError('Preview playback could not start. Try another device voice.');
         };
         window.speechSynthesis.speak(utterance);
       };
@@ -1430,125 +1544,89 @@
         setIsSpeaking(false);
       };
 
-      return React.createElement(
-        'div',
-        null,
-        React.createElement('h2', { className: "mb-4 text-2xl font-semibold" }, 'Text to Speech'),
-        React.createElement('p', { className: "mb-4 text-gray-500" }, 'Listen with voices available on your device. Playback only; audio file export is not supported.'),
-        React.createElement(
-          'div',
-          { className: "mb-4" },
-          React.createElement('textarea', {
-            value: text,
-            onChange: e => setText(e.target.value),
-            placeholder: "Enter text to be spoken...",
-            className: "h-40 w-full resize-none rounded-md border-2 border-gray-300 p-3 shadow-sm focus:border-indigo-500 focus:outline-none focus:ring focus:ring-indigo-200"
-          })
-        ),
-        React.createElement(
-          'div',
-          { className: "mb-4 space-y-4" },
-          React.createElement(
-            'div',
-            { className: "flex flex-col" },
-            React.createElement('label', { htmlFor: "voice-select", className: "font-medium text-gray-700" }, 'Voice'),
-            React.createElement(
-              'select',
-              {
-                id: "voice-select",
-                value: selectedVoice?.name || '',
-                onChange: e => {
-                  const voice = voices.find(v => v.name === e.target.value);
-                  setSelectedVoice(voice);
-                },
-                className: "mt-1 w-full rounded-md border-2 border-gray-300 p-2 shadow-sm focus:border-indigo-500 focus:outline-none focus:ring focus:ring-indigo-200"
-              },
-              voices.map(voice => React.createElement(
-                'option',
-                { key: voice.name, value: voice.name },
-                voice.name,
-                ' (',
-                voice.lang,
-                ')'
-              ))
-            )
-          ),
-          React.createElement(
-            'div',
-            { className: "grid grid-cols-1 md:grid-cols-3 gap-4" },
-            React.createElement(
-              'div',
-              null,
-              React.createElement('label', { htmlFor: "rate-slider", className: "font-medium text-gray-700" }, 'Rate: ', rate.toFixed(1)),
-              React.createElement('input', {
-                id: "rate-slider",
-                type: "range",
-                min: "0.1",
-                max: "2",
-                step: "0.1",
-                value: rate,
-                onChange: e => setRate(parseFloat(e.target.value)),
-                className: "mt-1 w-full accent-indigo-600"
-              })
-            ),
-            React.createElement(
-              'div',
-              null,
-              React.createElement('label', { htmlFor: "pitch-slider", className: "font-medium text-gray-700" }, 'Pitch: ', pitch.toFixed(1)),
-              React.createElement('input', {
-                id: "pitch-slider",
-                type: "range",
-                min: "0",
-                max: "2",
-                step: "0.1",
-                value: pitch,
-                onChange: e => setPitch(parseFloat(e.target.value)),
-                className: "mt-1 w-full accent-indigo-600"
-              })
-            ),
-            React.createElement(
-              'div',
-              null,
-              React.createElement('label', { htmlFor: "volume-slider", className: "font-medium text-gray-700" }, 'Volume: ', volume.toFixed(1)),
-              React.createElement('input', {
-                id: "volume-slider",
-                type: "range",
-                min: "0",
-                max: "1",
-                step: "0.1",
-                value: volume,
-                onChange: e => setVolume(parseFloat(e.target.value)),
-                className: "mt-1 w-full accent-indigo-600"
-              })
-            )
-          )
-        ),
-        voiceError && React.createElement('p', { role: 'status', className: "mb-3 text-sm text-amber-700", 'aria-live': 'polite' }, voiceError),
-        React.createElement(
-          'div',
-          { className: "flex flex-col gap-2 sm:flex-row" },
-          React.createElement(
-            'button',
-            {
-              onClick: handleSpeak,
-              disabled: isSpeaking,
-              className: "flex-1 rounded-md bg-indigo-600 px-4 py-3 font-semibold text-white transition-colors duration-200 hover:bg-indigo-700 disabled:bg-gray-400 focus:outline-none focus:ring focus:ring-indigo-500"
-            },
-            isSpeaking ? 'Speaking...' : 'Speak'
-          ),
-          React.createElement(
-            'button',
-            {
-              onClick: handleStop,
-              disabled: !isSpeaking,
-              className: "flex-1 rounded-md border border-gray-300 bg-white px-4 py-3 font-semibold text-gray-700 transition-colors duration-200 hover:bg-gray-100 disabled:bg-gray-100 disabled:text-gray-400 focus:outline-none focus:ring focus:ring-gray-300"
-            },
-            'Stop'
-          )
-        )
+      const generateAudio = async () => {
+        const trimmedText = text.trim();
+        if (!trimmedText) { setVoiceError('Enter text before generating audio.'); return; }
+        if (trimmedText.length > maxCharacters) { setVoiceError(`Keep your script within ${maxCharacters.toLocaleString()} characters.`); return; }
+        setVoiceError('');
+        setIsGenerating(true);
+        const controller = new AbortController();
+        abortControllerRef.current = controller;
+        try {
+          const response = await fetch('/api/voice', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ text: trimmedText, voice: providerVoice, speed: rate }),
+            signal: controller.signal
+          });
+          if (!response.ok) {
+            const errorBody = await response.json().catch(() => ({}));
+            throw new Error(errorBody.error || `Audio generation failed (${response.status}).`);
+          }
+          const audioBlob = await response.blob();
+          if (!audioBlob.size || !audioBlob.type.startsWith('audio/')) throw new Error('The speech service returned an invalid audio file. Try again.');
+          setAudioUrl(URL.createObjectURL(audioBlob));
+        } catch (error) {
+          if (error.name === 'AbortError') setVoiceError('Generation cancelled.');
+          else setVoiceError(error.message || 'Could not generate audio. Please try again later.');
+        } finally {
+          abortControllerRef.current = null;
+          setIsGenerating(false);
+        }
+      };
+
+      const safeFilename = `${filename.trim().replace(/[^a-zA-Z0-9_-]+/g, '-').replace(/^-+|-+$/g, '') || 'voiceover'}.mp3`;
+      return React.createElement('div', { className: 'mx-auto max-w-3xl' },
+        React.createElement('div', { className: 'mb-6' },
+          React.createElement('p', { className: 'mb-2 text-xs font-bold uppercase tracking-[.16em] text-violet-600' }, 'Audio & voice'),
+          React.createElement('h2', { className: 'text-3xl font-bold tracking-tight text-gray-900' }, 'Text to Speech & AI Voice Artist'),
+          React.createElement('p', { className: 'mt-2 text-sm leading-6 text-gray-500' }, 'Preview speech with voices on your device, or create a real downloadable MP3 with Vercel AI Gateway. Generated text is sent to the speech provider.'),
+          React.createElement('div', { className: 'mt-4 rounded-xl border border-blue-200 bg-blue-50 p-3 text-xs leading-5 text-blue-900' }, 'Downloadable MP3 uses the OpenAI TTS-1 model through AI Gateway. The provider exposes six supported voices and speed control. Browser preview voices and pitch controls are device-specific and do not affect generated files.')),
+        React.createElement('label', { htmlFor: 'voice-text', className: 'mb-2 block text-sm font-semibold text-gray-800' }, 'Your script'),
+        React.createElement('textarea', { id: 'voice-text', value: text, maxLength: maxCharacters, onChange: (event) => setText(event.target.value), placeholder: 'Paste or write the text you want to turn into speech…', className: 'safe-wrap min-h-48 w-full resize-y rounded-2xl border border-gray-300 bg-white p-4 text-sm leading-6 shadow-sm focus:border-violet-500 focus:outline-none focus:ring-2 focus:ring-violet-100' }),
+        React.createElement('div', { className: 'mt-2 flex flex-wrap items-center justify-between gap-3 text-xs text-gray-500' },
+          React.createElement('span', null, `${text.length.toLocaleString()} / ${maxCharacters.toLocaleString()} characters`),
+          React.createElement('div', { className: 'flex gap-3' },
+            React.createElement('button', { type: 'button', onClick: () => setText('Welcome to our guide. In this short narration, we will walk through the key ideas step by step.'), className: 'font-semibold text-violet-600 hover:text-violet-800' }, 'Use example'),
+            React.createElement('button', { type: 'button', onClick: () => { setText(''); setVoiceError(''); setAudioUrl(''); }, className: 'font-semibold text-gray-500 hover:text-gray-800' }, 'Clear text'))),
+        React.createElement('div', { className: 'my-6 grid gap-4 sm:grid-cols-2' },
+          React.createElement('div', null,
+            React.createElement('label', { htmlFor: 'ai-voice-select', className: 'mb-2 block text-sm font-semibold text-gray-800' }, 'AI voice (OpenAI TTS-1)'),
+            React.createElement('select', { id: 'ai-voice-select', value: providerVoice, onChange: (event) => setProviderVoice(event.target.value), className: 'w-full rounded-xl border border-gray-300 bg-white px-3 py-3 text-sm' },
+              [['alloy', 'Alloy'], ['echo', 'Echo'], ['fable', 'Fable'], ['onyx', 'Onyx'], ['nova', 'Nova'], ['shimmer', 'Shimmer']].map(([value, label]) => React.createElement('option', { key: value, value }, label))),
+            React.createElement('p', { className: 'mt-2 text-xs text-gray-500' }, 'These are the model-supported voice IDs. Language follows the script text; this model does not expose language, pitch, or style controls.')),
+          React.createElement('div', null,
+            React.createElement('label', { htmlFor: 'voice-speed', className: 'mb-2 block text-sm font-semibold text-gray-800' }, `Speech speed · ${rate.toFixed(1)}×`),
+            React.createElement('input', { id: 'voice-speed', type: 'range', min: '0.5', max: '2', step: '0.1', value: rate, onChange: (event) => setRate(Number(event.target.value)), className: 'mt-2 w-full accent-violet-600' }),
+            React.createElement('p', { className: 'mt-2 text-xs text-gray-500' }, 'Speed is applied to generated speech and the browser preview.'))),
+        React.createElement('div', { className: 'mb-6 rounded-2xl border border-gray-200 bg-gray-50 p-4' },
+          React.createElement('div', { className: 'mb-4 flex flex-wrap items-center justify-between gap-3' },
+            React.createElement('div', null, React.createElement('h3', { className: 'font-semibold text-gray-900' }, 'Browser voice preview'), React.createElement('p', { className: 'mt-1 text-xs text-gray-500' }, 'Local playback only. Browser speech cannot be exported as an audio file.')),
+            React.createElement('div', { className: 'flex gap-2' },
+              React.createElement('button', { type: 'button', onClick: handleSpeak, disabled: isSpeaking || !text.trim(), className: 'rounded-xl bg-gray-900 px-4 py-2.5 text-sm font-semibold text-white hover:bg-gray-700 disabled:opacity-50' }, isSpeaking ? 'Speaking…' : 'Preview voice'),
+              React.createElement('button', { type: 'button', onClick: handleStop, disabled: !isSpeaking, className: 'rounded-xl border border-gray-300 bg-white px-4 py-2.5 text-sm font-semibold disabled:opacity-50' }, 'Stop'))),
+          React.createElement('label', { htmlFor: 'device-voice-select', className: 'mb-2 block text-xs font-semibold text-gray-700' }, 'Device voice'),
+          React.createElement('select', { id: 'device-voice-select', value: selectedVoice?.name || '', onChange: (event) => setSelectedVoice(voices.find((voice) => voice.name === event.target.value) || null), className: 'w-full rounded-xl border border-gray-300 bg-white px-3 py-2.5 text-sm' }, voices.map((voice) => React.createElement('option', { key: voice.name, value: voice.name }, `${voice.name} (${voice.lang})`))),
+          voices.length === 0 && React.createElement('p', { className: 'mt-2 text-xs text-gray-500' }, 'No device voices are currently available in this browser.'),
+          React.createElement('div', { className: 'mt-4 grid gap-4 sm:grid-cols-2' },
+            React.createElement('div', null, React.createElement('label', { htmlFor: 'preview-pitch', className: 'text-xs font-medium text-gray-700' }, `Preview pitch · ${pitch.toFixed(1)}`), React.createElement('input', { id: 'preview-pitch', type: 'range', min: '0.5', max: '2', step: '0.1', value: pitch, onChange: (event) => setPitch(Number(event.target.value)), className: 'mt-1 w-full accent-violet-600' })),
+            React.createElement('div', null, React.createElement('label', { htmlFor: 'preview-volume', className: 'text-xs font-medium text-gray-700' }, `Preview volume · ${volume.toFixed(1)}`), React.createElement('input', { id: 'preview-volume', type: 'range', min: '0', max: '1', step: '0.1', value: volume, onChange: (event) => setVolume(Number(event.target.value)), className: 'mt-1 w-full accent-violet-600' })))),
+        React.createElement('div', { className: 'rounded-2xl border border-violet-200 bg-violet-50/70 p-4 sm:p-5' },
+          React.createElement('h3', { className: 'font-semibold text-gray-900' }, 'Generate a downloadable MP3'),
+          React.createElement('p', { className: 'mt-1 text-xs leading-5 text-gray-600' }, 'Audio is generated on the server and returned as a real MPEG audio file. Maximum script length: 4,000 characters.'),
+          React.createElement('label', { htmlFor: 'voice-filename', className: 'mb-2 mt-4 block text-xs font-semibold text-gray-700' }, 'Download filename'),
+          React.createElement('div', { className: 'flex items-center gap-2' }, React.createElement('input', { id: 'voice-filename', type: 'text', maxLength: 80, value: filename, onChange: (event) => setFilename(event.target.value), className: 'min-w-0 flex-1 rounded-xl border border-gray-300 bg-white px-3 py-2.5 text-sm' }), React.createElement('span', { className: 'text-sm text-gray-500' }, '.mp3')),
+          React.createElement('div', { className: 'mt-4 flex flex-wrap gap-2' },
+            React.createElement('button', { type: 'button', onClick: generateAudio, disabled: isGenerating || !text.trim() || text.length > maxCharacters, className: 'rounded-xl bg-violet-600 px-5 py-3 text-sm font-semibold text-white shadow-sm hover:bg-violet-700 disabled:cursor-not-allowed disabled:opacity-50' }, isGenerating ? 'Generating MP3…' : 'Generate voice MP3'),
+            isGenerating && React.createElement('button', { type: 'button', onClick: () => abortControllerRef.current?.abort(), className: 'rounded-xl border border-gray-300 bg-white px-4 py-3 text-sm font-semibold' }, 'Cancel')),
+          isGenerating && React.createElement('p', { className: 'mt-3 text-xs text-gray-600', role: 'status', 'aria-live': 'polite' }, 'Creating audio. This can take a little while for longer scripts.'),
+          voiceError && React.createElement('p', { className: 'mt-3 text-sm text-amber-800', role: 'alert', 'aria-live': 'polite' }, voiceError),
+          audioUrl && React.createElement('div', { className: 'mt-4 rounded-xl border border-violet-200 bg-white p-4' },
+            React.createElement('p', { className: 'mb-3 text-sm font-semibold text-gray-900' }, 'Your MP3 is ready'),
+            React.createElement('audio', { controls: true, src: audioUrl, className: 'w-full', 'aria-label': 'Generated speech audio preview' }),
+            React.createElement('a', { href: audioUrl, download: safeFilename, className: 'mt-3 inline-flex rounded-xl bg-gray-900 px-4 py-2.5 text-sm font-semibold text-white hover:bg-gray-700' }, `Download ${safeFilename}`)))
       );
     };
-
     // Render the main App component into the root div
     const container = document.getElementById('root');
     const root = ReactDOM.createRoot(container);
