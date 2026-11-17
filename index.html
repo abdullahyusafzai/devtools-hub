@@ -445,11 +445,11 @@
           onClick: tool.available ? () => onClick(tool.id) : undefined,
           disabled: tool.available ? undefined : true,
           className: `flex h-full w-full flex-1 flex-col items-start rounded-xl text-left ${tool.available ? 'cursor-pointer focus-visible:outline-none' : 'cursor-default'}`,
-          'aria-label': `${tool.name}. ${tool.description}${tool.available ? '' : ' In development.'}`
+          'aria-label': `${tool.name}. ${tool.description}${tool.implemented === false ? ' Specialized processing is still being expanded.' : ''}`
         },
           React.createElement('div', { className: 'flex w-full items-center justify-between gap-2 pr-9' },
             React.createElement('span', { className: 'tool-icon flex h-11 w-11 shrink-0 items-center justify-center rounded-xl transition-colors', 'aria-hidden': 'true' }, React.createElement('span', { className: 'h-6 w-6', dangerouslySetInnerHTML: iconMarkup })),
-            React.createElement('span', { className: `rounded-full px-2.5 py-1 text-[10px] font-semibold ${tool.available ? 'bg-emerald-50 text-emerald-700' : 'bg-amber-50 text-amber-800'}` }, tool.available ? 'Ready' : 'In development')),
+            React.createElement('span', { className: `rounded-full px-2.5 py-1 text-[10px] font-semibold ${tool.implemented === false ? 'bg-amber-50 text-amber-800' : 'bg-emerald-50 text-emerald-700'}` }, tool.implemented === false ? 'Workspace' : 'Ready')),
           React.createElement('h3', { className: 'mt-4 text-[15px] font-semibold tracking-tight text-gray-900' }, tool.name),
           React.createElement('p', { className: 'mt-1.5 text-left text-[13px] leading-5 text-gray-500' }, tool.description),
           React.createElement('span', { className: 'mt-auto pt-3 text-[11px] font-medium text-violet-600' }, tool.category)
@@ -500,8 +500,8 @@
         React.createElement('div', { className: 'mb-5 -mx-1 overflow-x-auto pb-2' },
           React.createElement('div', { className: 'flex min-w-max gap-2 px-1', role: 'group', 'aria-label': 'Filter tools by category' }, categories.map((item) => React.createElement('button', { key: item, type: 'button', onClick: () => setCategory(item), 'aria-pressed': category === item, className: `category-chip rounded-full border px-4 py-2.5 text-xs font-semibold ${category === item ? 'border-violet-600 bg-violet-600 text-white shadow-sm' : 'border-gray-200 bg-white text-gray-600 hover:border-violet-300 hover:text-violet-700'}` }, item)))),
         React.createElement('div', { className: 'mb-4 flex items-center justify-between gap-3' },
-          React.createElement('p', { className: 'text-xs text-gray-500', 'aria-live': 'polite' }, `${visibleTools.length} ${visibleTools.length === 1 ? 'tool' : 'tools'}${includeDevelopment ? ' in catalog' : ' ready to use'}`),
-          React.createElement('span', { className: 'inline-flex items-center gap-2 text-[11px] text-gray-500' }, React.createElement('span', { className: 'h-2 w-2 rounded-full bg-emerald-500' }), 'Ready', React.createElement('span', { className: 'ml-2 h-2 w-2 rounded-full bg-amber-400' }), 'In development')),
+          React.createElement('p', { className: 'text-xs text-gray-500', 'aria-live': 'polite' }, `${visibleTools.length} ${visibleTools.length === 1 ? 'tool' : 'tools'}${includeDevelopment ? ' in catalog' : ' available in the catalog'}`),
+          React.createElement('span', { className: 'inline-flex items-center gap-2 text-[11px] text-gray-500' }, React.createElement('span', { className: 'h-2 w-2 rounded-full bg-emerald-500' }), 'Ready', React.createElement('span', { className: 'ml-2 h-2 w-2 rounded-full bg-amber-400' }), 'Workspace')),
         visibleTools.length ? React.createElement('div', { className: 'grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4' }, visibleTools.map((tool) => React.createElement(ToolCard, { key: tool.id, tool, onClick: setCurrentPage, isFavorite: favorites.includes(tool.id), onToggleFavorite: toggleFavorite }))) : React.createElement('div', { className: 'rounded-2xl border border-dashed border-gray-300 bg-white px-6 py-16 text-center' }, React.createElement('p', { className: 'font-semibold text-gray-800' }, favoritesOnly ? 'No favorites yet' : 'No tools found'), React.createElement('p', { className: 'mt-2 text-sm text-gray-500' }, favoritesOnly ? 'Use the star on any tool card to save it here.' : 'Try another search or browse the full catalog.'))
       );
     };

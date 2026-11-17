@@ -66,5 +66,6 @@ export const plannedToolCatalog = Object.entries(groups).flatMap(([category, nam
     category,
     description: `${name} local workspace for this category. Specialized processing is being expanded category by category.`, 
     keywords: `${name} ${category} ${searchAliases[name] || ''}`,
-    available: true
+    available: true,
+    implemented: false
   })));
