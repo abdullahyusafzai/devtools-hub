@@ -10,6 +10,7 @@
     "test": "node --test"
   },
   "dependencies": {
+    "@spelling-creator/spellophone": "^0.2.1",
     "@upstash/ratelimit": "^2.2.1",
     "@upstash/redis": "^1.41.0",
     "ai": "^7.0.173",

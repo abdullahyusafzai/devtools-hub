@@ -144,14 +144,14 @@
 - [ ] JWT Decoder
 - [ ] UUID Generator
 - [ ] SHA-256 Hash Generator
-- [ ] Regex Tester
+- [x] Regex Tester (local JavaScript pattern matching)
 - [ ] Code Difference Checker
-- [ ] Markdown Preview
+- [x] Markdown Preview (safe subset; raw HTML escaped)
 - [ ] HTML Preview
-- [ ] CSV to JSON
-- [ ] JSON to CSV
+- [x] CSV to JSON
+- [x] JSON to CSV
 - [ ] Unix Timestamp Converter
-- [ ] CSS Gradient Generator
+- [x] CSS Gradient Generator
 - [ ] CSS Shadow Generator
 - [ ] Sample Data Generator
 
@@ -262,8 +262,6 @@
 - [ ] Simple Sudoku
 
 ## Operational follow-up
-- [x] Replace per-process speech throttling with shared Upstash sliding-window rate limiting and daily usage accounting (90-day retention; client addresses are HMAC-hashed).
-- [ ] Confirm Upstash Redis credentials are available in the deployment environment and run a live rate-limit/usage smoke test.
+- [ ] Verify offline voice synthesis and downloadable WAV output in supported browsers.
 - [ ] Configure a valid AdSense ad-slot ID before showing ads.
-- [ ] Verify the live Gateway model call in a Vercel deployment with configured authentication.
 - [ ] Add automated regression, accessibility, and broader device tests.

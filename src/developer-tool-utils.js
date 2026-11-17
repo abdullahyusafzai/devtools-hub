@@ -129,3 +129,62 @@ export function dateToTimestamps(value) {
     milliseconds
   };
 }
+
+export function correctCommonGrammar(value) {
+  let text = String(value);
+  let corrections = 0;
+  const replace = (pattern, replacement) => {
+    const matches = text.match(pattern);
+    if (!matches) return;
+    corrections += pattern.global ? matches.length : 1;
+    text = text.replace(pattern, replacement);
+  };
+
+  replace(/\bi\b/g, 'I');
+  replace(/\b(dont|doesnt|didnt|cant|couldnt|wouldnt|shouldnt|isnt|arent|wasnt|werent|havent|hasnt|hadnt|wont|youre|theyre)\b/gi, (match) => {
+    const contractions = { dont: "don't", doesnt: "doesn't", didnt: "didn't", cant: "can't", couldnt: "couldn't", wouldnt: "wouldn't", shouldnt: "shouldn't", isnt: "isn't", arent: "aren't", wasnt: "wasn't", werent: "weren't", havent: "haven't", hasnt: "hasn't", hadnt: "hadn't", wont: "won't", youre: "you're", theyre: "they're" };
+    return contractions[match.toLowerCase()] || match;
+  });
+  replace(/\b(teh)\b/gi, 'the');
+  replace(/[ \t]+([,.!?;:])/g, '$1');
+  replace(/([.!?])\1+/g, '$1');
+  replace(/(^|[.!?]\s+)([a-z])/g, (match, prefix, letter) => `${prefix}${letter.toUpperCase()}`);
+  replace(/[ \t]{2,}/g, ' ');
+
+  return { text, corrections };
+}
+
+export function removeDuplicateLines(value) {
+  const seen = new Set();
+  return String(value).split(/\r?\n/).filter((line) => {
+    const key = line.trim().replace(/\s+/g, ' ').toLocaleLowerCase();
+    if (!key || seen.has(key)) return false;
+    seen.add(key);
+    return true;
+  }).join('\n');
+}
+
+export function cleanText(value) {
+  return String(value)
+    .replace(/\u00a0/g, ' ')
+    .split(/\r?\n/)
+    .map((line) => line.replace(/[\t ]+/g, ' ').trim())
+    .join('\n')
+    .replace(/\n{3,}/g, '\n\n')
+    .trim();
+}
+
+export function createUrlSlug(value) {
+  return String(value)
+    .normalize('NFKD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase()
+    .trim()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '');
+}
+
+export function countWords(value) {
+  const words = String(value).trim().match(/[\p{L}\p{N}]+(?:['’][\p{L}\p{N}]+)*/gu);
+  return words ? words.length : 0;
+}

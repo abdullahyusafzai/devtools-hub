@@ -63,14 +63,11 @@ Classic Snake Game; Tic-Tac-Toe; Memory Matching Game; Number Guessing Game; Typ
 
 ## Priority feature requirements
 
-### AI Voice Artist
-- Preserve browser speech synthesis as an explicitly local preview.
-- Produce a genuine server-generated MP3 with real MPEG audio bytes; never fake an audio download.
-- Keep provider credentials server-side and use a replaceable provider adapter.
-- Offer only voice controls verified for the selected model. The current OpenAI TTS-1 model exposes six voices and speed; language follows input text, and pitch/style are not offered for generated audio.
-- Show text/character limits, input validation, progress, errors, cancel, audio playback, custom filename, and a real download.
-- Maximum script length is 4,000 characters. Local generation needs an AI Gateway key; Vercel deployments use Gateway deployment authentication.
-- Protect provider spend with a shared three-per-minute sliding-window limit and daily usage counters; fail closed if Redis protection is unavailable.
+### Offline Voice Artist
+- Synthesize speech locally in the browser with an offline speech engine; do not send script text to a provider or speech API.
+- Offer English voice variants, speed, pitch, and volume controls, audio preview, a custom filename, and a genuine WAV download.
+- Limit scripts to 4,000 characters and show clear validation, initialization progress, and errors.
+- Keep the engine data self-hosted with the app; no account, API key, paid service, or per-download fee.
 
 ### Snake
 - Original grid-based game, not an image or commercial asset copy.
@@ -86,10 +83,10 @@ Classic Snake Game; Tic-Tac-Toe; Memory Matching Game; Number Guessing Game; Typ
 - Maintain meaningful metadata, English-first content, and an architecture that can later support translations.
 
 ## Architecture and safety
-- Preserve the original single-file React-on-CDN app; use Vite for build/development and Vercel Functions for server-side speech.
+- Preserve the original React-on-CDN app; use Vite for build/development and Vercel Functions only for features that need server-side work.
 - Keep the tool catalog centralized and label every entry Ready or In development.
 - Use local browser processing for suitable text and image utilities. Do not upload local files unless a feature explicitly needs a server.
-- Set request size, input length, voice allowlist, output format, timeout, and rate safeguards on speech generation.
+- Validate and cap inputs at each tool boundary.
 - Do not expose credentials, misrepresent model options, or imply that pending tools work.
 - URL shortening/dynamic QR require persistent storage, redirect safeguards, and abuse controls before release.
 
@@ -97,27 +94,26 @@ Classic Snake Game; Tic-Tac-Toe; Memory Matching Game; Number Guessing Game; Typ
 - All 12 original tool implementations preserved.
 - Responsive redesigned dashboard, category/search discovery, descriptive task suggestions, favorites, and saved light/dark mode.
 - Full requested catalog is discoverable; unfinished tools are labeled In development and are not launchable.
-- AI Voice Artist/downloadable Text to Speech route with server-generated MP3 integration, honest configuration message, separate local browser speech, and same-model short AI voice previews.
+- Offline Voice Artist/Text to Speech route with locally synthesized speech, self-hosted English engine data, and downloadable WAV output.
 - Local Image to PDF tool for multiple PNG/JPEG images, with size/count validation and a real downloadable PDF.
 - Local JSON Formatter (pretty-print/minify/copy/download) and JSON Validator with clear syntax errors.
+- Local Regex Tester, CSV-to-JSON and JSON-to-CSV converters, safe Markdown Preview, and CSS Gradient Generator.
 - Original Snake game with keyboard/touch controls, difficulty, pause/restart, scoring, collision handling, and local high score.
-- Vite workflow, Vercel Function, provider adapter, README, `.env.example`, and tool checklist.
+- Vite workflow, README, `.env.example`, and tool checklist.
 
 ## Pending work
 - Actual implementations for the remaining catalog tools, added category by category.
-- Live deployment verification of the connected Upstash rate-limit and usage-accounting service.
 - Automated tests for every released tool; complete browser/device/accessibility regression testing.
-- Additional translations and language-specific voice support only when the selected provider supports it.
+- Additional language packs for offline voice synthesis.
 - Configure a real AdSense ad-slot ID before displaying ads; the inherited slot value is a publisher ID, not an ad slot.
 
 ## Known constraints
-- The configured speech model exports MP3 only in this app; WAV is intentionally not offered without a verified provider/model format.
-- Speech generation uses shared Upstash sliding-window rate limiting and daily usage counters; the local sandbox does not currently expose the integration's Redis environment variables, so live Redis behavior must be smoke-tested in a configured Vercel environment.
-- Local Vite preview serves the UI; use the Vercel development runtime for local function testing. The current sandbox did not have a local Gateway credential, so live model generation was not exercised here.
+- Offline speech currently includes English voice variants only. The engine and English voice data are served by the app and run in the browser; synthesis itself does not call a remote speech service.
+- Local Vite preview serves the UI; use the Vercel development runtime only for features that require Vercel Functions.
 - Tailwind is still loaded from its CDN as in the original static project; the Vite production build reports its upstream recommendation to bundle Tailwind for production.
 
 ## Next priorities
-1. Complete configured Vercel smoke tests for Upstash rate limiting and Gateway speech generation.
+1. Complete browser verification of the offline speech workflow and supported voice options.
 2. Expand the PDF and developer tool families, and add more image catalog utilities.
 3. Add automated regression checks for each released tool and representative responsive/accessibility tests.
 4. Continue category-by-category expansion and internationalization.
