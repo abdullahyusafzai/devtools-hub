@@ -42,6 +42,10 @@ function TextArea({ id, label, value, onChange, placeholder, readOnly = false, r
   );
 }
 
+function TextInput({ id, label, value, onChange, placeholder, inputMode = 'text' }) {
+  return h('label', { className: 'block space-y-2' }, h('span', { className: 'text-sm font-semibold text-gray-800' }, label), h('input', { id, value, onChange, placeholder, inputMode, className: fieldClass }));
+}
+
 function ToolError({ message }) {
   return message ? h('p', { className: 'mt-3 text-sm text-red-700', role: 'alert' }, message) : null;
 }
@@ -439,6 +443,26 @@ export function CssGradientTool() {
   const [angle, setAngle] = React.useState('135');
   const value = `linear-gradient(${angle}deg, ${start}, ${end})`;
   return h('section', { className: 'max-w-3xl' }, h(ToolIntro, { title: 'CSS Gradient Generator' }, 'Create a two-color linear CSS gradient and copy the generated declaration. No external service is used.'), h('div', { className: 'grid gap-4 sm:grid-cols-3' }, [[start, setStart, 'Start color'], [end, setEnd, 'End color']].map(([color, setter, label]) => h('label', { className: 'block space-y-2', key: label }, h('span', { className: 'block text-sm font-semibold text-gray-800' }, label), h('input', { type: 'color', value: color, onChange: (event) => setter(event.target.value), className: 'h-12 w-full cursor-pointer rounded-lg border border-gray-200 bg-white p-1' }))), h('label', { className: 'block space-y-2' }, h('span', { className: 'text-sm font-semibold text-gray-800' }, `Angle · ${angle}°`), h('input', { type: 'range', min: 0, max: 360, value: angle, onChange: (event) => setAngle(event.target.value), className: 'mt-3 w-full accent-violet-600' }))), h('div', { className: 'mt-5 h-40 rounded-2xl border border-gray-200 shadow-inner', style: { background: value }, role: 'img', 'aria-label': `Gradient preview from ${start} to ${end} at ${angle} degrees` }), h(OutputPanel, { label: 'CSS gradient', value, rows: 2 }));
+}
+
+export function BasicCalculatorTool() {
+  const [expression, setExpression] = React.useState('');
+  const [result, setResult] = React.useState('');
+  const [error, setError] = React.useState('');
+  const calculate = () => {
+    const value = expression.trim();
+    if (!value || !/^[0-9+\-*/%().\s]+$/.test(value)) { setError('Use numbers and +, −, ×, ÷, %, parentheses, or decimals only.'); setResult(''); return; }
+    try { const answer = Function(`"use strict"; return (${value})`)(); if (!Number.isFinite(answer)) throw new Error('invalid'); setResult(String(answer)); setError(''); } catch { setError('That expression could not be calculated.'); setResult(''); }
+  };
+  return h('section', { className: 'max-w-2xl' }, h(ToolIntro, { title: 'Basic Calculator' }, 'Evaluate arithmetic locally with a validated expression.'), h(TextInput, { id: 'basic-calculator-expression', label: 'Expression', value: expression, onChange: (event) => setExpression(event.target.value), placeholder: 'Example: (18 + 7) * 3' }), h('button', { type: 'button', className: `${buttonClass} mt-4`, onClick: calculate, disabled: !expression.trim() }, 'Calculate'), error && h(ToolError, null, error), result && h(OutputPanel, { label: 'Result', value: result, rows: 2 }));
+}
+
+export function PercentageCalculatorTool() {
+  const [value, setValue] = React.useState('');
+  const [percent, setPercent] = React.useState('');
+  const [result, setResult] = React.useState('');
+  const calculate = () => { const amount = Number(value); const rate = Number(percent); setResult(Number.isFinite(amount) && Number.isFinite(rate) ? String((amount * rate) / 100) : 'Enter valid numbers.'); };
+  return h('section', { className: 'max-w-2xl' }, h(ToolIntro, { title: 'Percentage Calculator' }, 'Calculate a percentage of any number locally.'), h('div', { className: 'grid gap-4 sm:grid-cols-2' }, h(TextInput, { id: 'percentage-value', label: 'Number', value, onChange: (event) => setValue(event.target.value), inputMode: 'decimal' }), h(TextInput, { id: 'percentage-rate', label: 'Percent', value: percent, onChange: (event) => setPercent(event.target.value), inputMode: 'decimal' })), h('button', { type: 'button', className: `${buttonClass} mt-4`, onClick: calculate, disabled: !value || !percent }, 'Calculate percentage'), result && h(OutputPanel, { label: 'Result', value: result, rows: 2 }));
 }
 
 export function UniversalTool({ toolName, category }) {

@@ -78,7 +78,7 @@
   <script type="module">
   import { plannedToolCatalog } from './src/tool-catalog.js';
   import { generateSpeechWav } from './src/voice-generator.js';
-  import { Base64Tool, CsvToJsonTool, DuplicateLinesTool, GrammarCorrectionTool, HtmlEntitiesTool, JsonToCsvTool, MarkdownPreviewTool, ReadingTimeTool, RegexTesterTool, CssGradientTool, Sha256Tool, TextCleanerTool, UnixTimestampTool, UniversalTool, UrlSlugTool, UuidTool } from './src/developer-tools.js';
+  import { Base64Tool, BasicCalculatorTool, CsvToJsonTool, DuplicateLinesTool, GrammarCorrectionTool, HtmlEntitiesTool, JsonToCsvTool, PercentageCalculatorTool, MarkdownPreviewTool, ReadingTimeTool, RegexTesterTool, CssGradientTool, Sha256Tool, TextCleanerTool, UnixTimestampTool, UniversalTool, UrlSlugTool, UuidTool } from './src/developer-tools.js';
 
     // Centralized list of tools with their IDs, names, and SVG icons
     const tools = [
@@ -175,7 +175,7 @@
       'css-gradient-generator': 'Build and preview a two-color CSS gradient.'
     };
     const existingToolNames = new Set(tools.map((tool) => tool.name.toLowerCase()));
-    const implementedCatalogNames = new Set(['Offline Voice Artist', 'Classic Snake Game', 'Image to PDF', 'JSON Formatter', 'JSON Validator'].map((name) => name.toLowerCase()));
+    const implementedCatalogNames = new Set(['Offline Voice Artist', 'Classic Snake Game', 'Image to PDF', 'JSON Formatter', 'JSON Validator', 'Basic Calculator', 'Percentage Calculator'].map((name) => name.toLowerCase()));
     const catalogTools = [
       ...tools.map((tool) => ({
         ...tool,
@@ -189,7 +189,9 @@
       { id: 'snake-game', name: 'Classic Snake Game', category: 'Games & Entertainment', description: 'Play a responsive grid-based Snake game with touch and keyboard controls.', keywords: 'snake game nokia classic games play', available: true, svg: tools[0].svg },
       { id: 'image-to-pdf', name: 'Image to PDF', category: 'PDF & Documents', description: 'Combine PNG and JPEG images into a private, locally created PDF.', keywords: 'pdf convert images jpg png document', available: true, svg: tools.find((tool) => tool.id === 'image-converter').svg },
       { id: 'json-formatter', name: 'JSON Formatter', category: 'Developer Tools', description: 'Format, minify, copy, and download JSON in your browser.', keywords: 'json prettify format minify developer', available: true, svg: tools.find((tool) => tool.id === 'url-encoder-decoder').svg },
-      { id: 'json-validator', name: 'JSON Validator', category: 'Developer Tools', description: 'Validate JSON syntax locally and see clear error feedback.', keywords: 'json validate syntax developer', available: true, svg: tools.find((tool) => tool.id === 'url-encoder-decoder').svg }
+      { id: 'json-validator', name: 'JSON Validator', category: 'Developer Tools', description: 'Validate JSON syntax locally and see clear error feedback.', keywords: 'json validate syntax developer', available: true, svg: tools.find((tool) => tool.id === 'url-encoder-decoder').svg },
+      { id: 'basic-calculator', name: 'Basic Calculator', category: 'Calculators & Converters', description: 'Evaluate arithmetic expressions locally.', keywords: 'calculator math arithmetic', available: true },
+      { id: 'percentage-calculator', name: 'Percentage Calculator', category: 'Calculators & Converters', description: 'Calculate a percentage of a number locally.', keywords: 'percentage percent math calculator', available: true }
     ];
 
     const copyTextToClipboard = async (value) => {
@@ -336,6 +338,10 @@
         switch (currentPage) {
           case 'home':
             return React.createElement(HomePage, { setCurrentPage, favorites, setFavorites, favoritesOnly });
+          case 'basic-calculator':
+            return React.createElement(ToolPage, { toolName: 'Basic Calculator', setCurrentPage }, React.createElement(BasicCalculatorTool));
+          case 'percentage-calculator':
+            return React.createElement(ToolPage, { toolName: 'Percentage Calculator', setCurrentPage }, React.createElement(PercentageCalculatorTool));
           case 'qr-code-generator':
             return React.createElement(ToolPage, { toolName: "QR Code Generator", setCurrentPage }, React.createElement(QRCodeGenerator));
           case 'case-converter':
