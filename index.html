@@ -12,6 +12,10 @@
   </script>
   <meta name="theme-color" content="#0b1020">
   <meta name="description" content="Create, convert, edit, write, and simplify digital tasks with the DevTools Hub workspace.">
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="DevTools Hub — Your digital utility workspace">
+  <meta property="og:description" content="Practical browser-first tools for everyday digital work.">
+  <meta property="og:url" content="https://devtools-hub-ab.vercel.app/">
   <title>DevTools Hub - Your digital utility workspace</title>
   <!-- Load React and ReactDOM from CDN -->
   <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
@@ -79,6 +83,9 @@
   import { plannedToolCatalog } from './src/tool-catalog.js';
   import { generateSpeechWav } from './src/voice-generator.js';
   import { Base64Tool, BasicCalculatorTool, CsvToJsonTool, DuplicateLinesTool, GrammarCorrectionTool, HtmlEntitiesTool, JsonToCsvTool, PercentageCalculatorTool, MarkdownPreviewTool, ReadingTimeTool, RegexTesterTool, CssGradientTool, ExpandedUtilityTool, Sha256Tool, TextCleanerTool, UnixTimestampTool, UniversalTool, UrlSlugTool, UuidTool } from './src/developer-tools.js';
+  import { PdfTool } from './src/pdf-tools.js';
+  import { AdditionalUtilityTool } from './src/additional-tools.js';
+  import { AiWritingTool } from './src/ai-writing-tool.js';
 
     // Centralized list of tools with their IDs, names, and SVG icons
     const tools = [
@@ -175,7 +182,12 @@
       'css-gradient-generator': 'Build and preview a two-color CSS gradient.'
     };
     const existingToolNames = new Set(tools.map((tool) => tool.name.toLowerCase()));
-    const implementedCatalogNames = new Set(['Offline Voice Artist', 'Classic Snake Game', 'Image to PDF', 'JSON Formatter', 'JSON Validator', 'Basic Calculator', 'Percentage Calculator', 'Text Sorter', 'Whitespace Remover', 'Find and Replace', 'Reading Time Calculator', 'Random Number Generator', 'Password Strength Checker', 'Meta Tag Generator', 'Discount Calculator', 'Age Calculator', 'UTM Campaign Builder'].map((name) => name.toLowerCase()));
+    const implementedCatalogNames = new Set(['Offline Voice Artist', 'Classic Snake Game', 'Image to PDF', 'JSON Formatter', 'JSON Validator', 'Basic Calculator', 'Percentage Calculator', 'Text Sorter', 'Whitespace Remover', 'Find and Replace', 'Reading Time Calculator', 'Random Number Generator', 'Password Strength Checker', 'Meta Tag Generator', 'Discount Calculator', 'Age Calculator', 'UTM Campaign Builder', 'PDF Merger', 'PDF Splitter', 'PDF Page Rotator', 'PDF Page Reorder', 'PDF Watermark', 'PDF Page Remover', 'PDF Page Extractor', 'PDF Metadata Viewer', 'JWT Decoder', 'Code Difference Checker', 'HTTP Status Code Reference', 'CSS Shadow Generator', 'Sample Data Generator', 'Lorem Ipsum Generator', 'Date Difference Calculator', 'Stopwatch', 'Countdown Timer', 'Pomodoro Timer', 'Tic-Tac-Toe', 'Text Summarizer', 'AI Rephrasing Tool'].map((name) => name.toLowerCase()));
+    const readyToolDescriptions = {
+      'Text Sorter': 'Sort lines alphabetically while keeping the text on your device.', 'Whitespace Remover': 'Normalize spaces and excess blank lines locally.', 'Find and Replace': 'Replace matching text without uploading your content.', 'Reading Time Calculator': 'Count words and estimate reading time at a stated pace.', 'Random Number Generator': 'Generate an integer in a range you choose.', 'Password Strength Checker': 'Check length and character variety locally; the password is not sent.', 'Meta Tag Generator': 'Create an escaped title and description meta snippet.', 'Discount Calculator': 'Calculate savings and final price for a percentage discount.', 'Age Calculator': 'Calculate age from a birth date without sharing it.', 'UTM Campaign Builder': 'Add source, medium, and campaign parameters to a valid URL.',
+      'PDF Merger': 'Combine multiple PDFs into one file locally.', 'PDF Splitter': 'Export selected PDF pages as individual files locally.', 'PDF Page Rotator': 'Rotate every page in a PDF and download the result.', 'PDF Page Reorder': 'Arrange all PDF pages in a new order.', 'PDF Watermark': 'Add a text watermark to each page in a PDF.', 'PDF Page Remover': 'Remove selected pages from a PDF locally.', 'PDF Page Extractor': 'Create a new PDF from selected pages.', 'PDF Metadata Viewer': 'Inspect embedded title, author, and date metadata locally.',
+      'JWT Decoder': 'Inspect a token header and payload; signature verification is not performed.', 'Code Difference Checker': 'Compare line changes locally with a bounded line-based diff.', 'HTTP Status Code Reference': 'Search common HTTP response codes and explanations.', 'CSS Shadow Generator': 'Tune and preview a box-shadow declaration.', 'Sample Data Generator': 'Create fictional JSON records using reserved example.test email addresses.', 'Lorem Ipsum Generator': 'Generate standard placeholder paragraphs.', 'Date Difference Calculator': 'Calculate elapsed days and weeks between two dates.', 'Stopwatch': 'Time an activity and record laps in your browser.', 'Countdown Timer': 'Run a browser-based countdown for up to three hours.', 'Pomodoro Timer': 'Start a focused work interval with a local countdown.', 'Tic-Tac-Toe': 'Play a two-player game on this device.', 'Text Summarizer': 'Summarize supplied text with an explicitly disclosed AI model request.', 'AI Rephrasing Tool': 'Rewrite supplied text for clarity with an explicitly disclosed AI model request.'
+    };
     const catalogTools = [
       ...tools.map((tool) => ({
         ...tool,
@@ -194,7 +206,11 @@
       { id: 'percentage-calculator', name: 'Percentage Calculator', category: 'Calculators & Converters', description: 'Calculate a percentage of a number locally.', keywords: 'percentage percent math calculator', available: true },
       ...[
         ['text-sorter', 'Text Sorter', 'Productivity & Text'], ['whitespace-remover', 'Whitespace Remover', 'Productivity & Text'], ['find-and-replace', 'Find and Replace', 'Productivity & Text'], ['reading-time-calculator', 'Reading Time Calculator', 'Productivity & Text'], ['random-number-generator', 'Random Number Generator', 'Productivity & Text'], ['password-strength-checker', 'Password Strength Checker', 'Security & Privacy'], ['meta-tag-generator', 'Meta Tag Generator', 'SEO & Marketing'], ['discount-calculator', 'Discount Calculator', 'Calculators & Converters'], ['age-calculator', 'Age Calculator', 'Calculators & Converters'], ['utm-campaign-builder', 'UTM Campaign Builder', 'SEO & Marketing']
-      ].map(([id, name, category]) => ({ id, name, category, description: `${name} runs locally in your browser.`, keywords: `${name} ${category}`, available: true, expanded: true }))
+      ].map(([id, name, category]) => ({ id, name, category, description: readyToolDescriptions[name] || `${name} runs locally in your browser.`, keywords: `${name} ${category}`, available: true, expanded: true })),
+      ...[
+        ['pdf-merger', 'PDF Merger', 'PDF & Documents'], ['pdf-splitter', 'PDF Splitter', 'PDF & Documents'], ['pdf-page-rotator', 'PDF Page Rotator', 'PDF & Documents'], ['pdf-page-reorder', 'PDF Page Reorder', 'PDF & Documents'], ['pdf-watermark', 'PDF Watermark', 'PDF & Documents'], ['pdf-page-remover', 'PDF Page Remover', 'PDF & Documents'], ['pdf-page-extractor', 'PDF Page Extractor', 'PDF & Documents'], ['pdf-metadata-viewer', 'PDF Metadata Viewer', 'PDF & Documents'],
+        ['jwt-decoder', 'JWT Decoder', 'Developer Tools'], ['code-difference-checker', 'Code Difference Checker', 'Developer Tools'], ['http-status-code-reference', 'HTTP Status Code Reference', 'Developer Tools'], ['css-shadow-generator', 'CSS Shadow Generator', 'Developer Tools'], ['sample-data-generator', 'Sample Data Generator', 'Developer Tools'], ['lorem-ipsum-generator', 'Lorem Ipsum Generator', 'Productivity & Text'], ['date-difference-calculator', 'Date Difference Calculator', 'Calculators & Converters'], ['stopwatch', 'Stopwatch', 'Productivity & Text'], ['countdown-timer', 'Countdown Timer', 'Productivity & Text'], ['pomodoro-timer', 'Pomodoro Timer', 'Productivity & Text'], ['tic-tac-toe', 'Tic-Tac-Toe', 'Games & Entertainment'], ['text-summarizer', 'Text Summarizer', 'AI Tools'], ['ai-rephrasing-tool', 'AI Rephrasing Tool', 'AI Tools']
+      ].map(([id, name, category]) => ({ id, name, category, description: readyToolDescriptions[name] || `${name} is available as a local browser tool.`, keywords: `${name} ${category}`, available: true, expanded: true, svg: developerToolIcon }))
     ];
 
     const copyTextToClipboard = async (value) => {
@@ -244,7 +260,7 @@
     };
 
     const ADSENSE_CLIENT_ID = 'ca-pub-5058994010586674';
-    const ADSENSE_AD_SLOT_ID = '3454126786';
+    const ADSENSE_AD_SLOT_ID = '';
 
     // Reusable AdSenseAd component
     const AdSenseAd = ({ slot, client = ADSENSE_CLIENT_ID }) => {
@@ -313,10 +329,11 @@
         try { return JSON.parse(window.localStorage.getItem('devtools-hub-favorites') || '[]'); } catch { return []; }
       });
       const [favoritesOnly, setFavoritesOnly] = React.useState(false);
+      const [searchQuery, setSearchQuery] = React.useState('');
 
       const setCurrentPage = (page) => {
         setCurrentPageState(page);
-        const nextUrl = page === 'home' ? `${window.location.pathname}${window.location.search}` : `#${page}`;
+        const nextUrl = page === 'home' ? `${window.location.pathname === '/' ? '/' : window.location.pathname}${window.location.search}` : `#${page}`;
         window.history.pushState(null, '', nextUrl);
         window.scrollTo({ top: 0, behavior: 'smooth' });
       };
@@ -326,6 +343,17 @@
         window.addEventListener('popstate', syncPage);
         return () => window.removeEventListener('popstate', syncPage);
       }, []);
+
+      React.useEffect(() => {
+        const pageInfo = catalogTools.find((tool) => tool.id === currentPage);
+        const staticPageInfo = { about: { title: 'About DevTools Hub', description: 'A practical collection of browser-first tools for everyday digital work.' }, 'privacy-policy': { title: 'Privacy Policy', description: 'How DevTools Hub handles browser preferences and locally processed content.' }, 'terms-of-use': { title: 'Terms of Use', description: 'Terms for using DevTools Hub browser utilities.' } }[currentPage];
+        const pageTitle = pageInfo?.name || staticPageInfo?.title || 'DevTools Hub';
+        const pageDescription = pageInfo?.description || staticPageInfo?.description || 'Create, convert, edit, write, and simplify digital tasks with the DevTools Hub workspace.';
+        document.title = currentPage === 'home' ? 'DevTools Hub — Your digital utility workspace' : `${pageTitle} — DevTools Hub`;
+        document.querySelector('meta[name="description"]')?.setAttribute('content', pageDescription);
+        document.querySelector('meta[property="og:title"]')?.setAttribute('content', document.title);
+        document.querySelector('meta[property="og:description"]')?.setAttribute('content', pageDescription);
+      }, [currentPage]);
 
       React.useEffect(() => {
         document.documentElement.setAttribute('data-theme', theme);
@@ -340,7 +368,7 @@
       const renderTool = () => {
         switch (currentPage) {
           case 'home':
-            return React.createElement(HomePage, { setCurrentPage, favorites, setFavorites, favoritesOnly });
+            return React.createElement(HomePage, { setCurrentPage, favorites, setFavorites, favoritesOnly, query: searchQuery, setQuery: setSearchQuery });
           case 'basic-calculator':
             return React.createElement(ToolPage, { toolName: 'Basic Calculator', setCurrentPage }, React.createElement(BasicCalculatorTool));
           case 'percentage-calculator':
@@ -418,10 +446,50 @@
             return React.createElement(ToolPage, { toolName: currentPage === 'ai-voice-artist' ? "Offline Voice Artist" : "Text to Speech", setCurrentPage }, React.createElement(TextToSpeech));
           case 'snake-game':
             return React.createElement(ToolPage, { toolName: "Classic Snake Game", setCurrentPage }, React.createElement(window.SnakeGame));
+          case 'about':
+          case 'privacy-policy':
+          case 'terms-of-use': {
+            const pages = {
+              about: { title: 'About DevTools Hub', paragraphs: ['DevTools Hub brings practical text, image, document, developer, and productivity utilities together in one responsive workspace.', 'Many tools process content entirely in your browser. Some supporting libraries and interface assets are delivered from third-party CDNs. The tool page explains relevant local processing and limitations.'] },
+              'privacy-policy': { title: 'Privacy Policy', paragraphs: ['Favorites and theme preference are stored in this browser. Content entered into local tools and files processed by the PDF and image utilities stay in your browser and are not uploaded by those tools.', 'Some interface libraries load from third-party CDNs. AI writing sends text you submit to Vercel AI Gateway for model processing and can incur charges; this app does not retain prompt text. Upstash uses the request IP for a short-lived rate-limit key. Offline Voice Artist synthesizes audio locally. Advertising is disabled until a valid ad-slot configuration is supplied.'] },
+              'terms-of-use': { title: 'Terms of Use', paragraphs: ['DevTools Hub is provided for general informational and productivity purposes. Review generated output before relying on it; the tools are not professional legal, medical, financial, or security advice.', 'Use file utilities only with documents you are authorized to process. Browser support and format limitations may affect results. No user account is required for the local tools.'] }
+            }[currentPage];
+            return React.createElement(ToolPage, { toolName: pages.title, setCurrentPage }, React.createElement('article', { className: 'max-w-3xl space-y-4' }, React.createElement('h1', { className: 'text-2xl font-bold tracking-tight text-gray-900' }, pages.title), ...pages.paragraphs.map((paragraph) => React.createElement('p', { key: paragraph, className: 'text-sm leading-7 text-gray-600' }, paragraph))));
+          }
+          case 'pdf-merger':
+          case 'pdf-splitter':
+          case 'pdf-page-rotator':
+          case 'pdf-page-reorder':
+          case 'pdf-watermark':
+          case 'pdf-page-remover':
+          case 'pdf-page-extractor':
+          case 'pdf-metadata-viewer': {
+            const pdfNames = { 'pdf-merger': 'PDF Merger', 'pdf-splitter': 'PDF Splitter', 'pdf-page-rotator': 'PDF Page Rotator', 'pdf-page-reorder': 'PDF Page Reorder', 'pdf-watermark': 'PDF Watermark', 'pdf-page-remover': 'PDF Page Remover', 'pdf-page-extractor': 'PDF Page Extractor', 'pdf-metadata-viewer': 'PDF Metadata Viewer' };
+            return React.createElement(ToolPage, { toolName: pdfNames[currentPage], setCurrentPage }, React.createElement(PdfTool, { toolName: pdfNames[currentPage] }));
+          }
+          case 'jwt-decoder':
+          case 'code-difference-checker':
+          case 'http-status-code-reference':
+          case 'css-shadow-generator':
+          case 'sample-data-generator':
+          case 'lorem-ipsum-generator':
+          case 'date-difference-calculator':
+          case 'stopwatch':
+          case 'countdown-timer':
+          case 'pomodoro-timer':
+          case 'tic-tac-toe': {
+            const additionalNames = { 'jwt-decoder': 'JWT Decoder', 'code-difference-checker': 'Code Difference Checker', 'http-status-code-reference': 'HTTP Status Code Reference', 'css-shadow-generator': 'CSS Shadow Generator', 'sample-data-generator': 'Sample Data Generator', 'lorem-ipsum-generator': 'Lorem Ipsum Generator', 'date-difference-calculator': 'Date Difference Calculator', stopwatch: 'Stopwatch', 'countdown-timer': 'Countdown Timer', 'pomodoro-timer': 'Pomodoro Timer', 'tic-tac-toe': 'Tic-Tac-Toe' };
+            return React.createElement(ToolPage, { toolName: additionalNames[currentPage], setCurrentPage }, React.createElement(AdditionalUtilityTool, { toolName: additionalNames[currentPage] }));
+          }
+          case 'text-summarizer':
+          case 'ai-rephrasing-tool': {
+            const aiNames = { 'text-summarizer': 'Text Summarizer', 'ai-rephrasing-tool': 'AI Rephrasing Tool' };
+            return React.createElement(ToolPage, { toolName: aiNames[currentPage], setCurrentPage }, React.createElement(AiWritingTool, { toolName: aiNames[currentPage] }));
+          }
           default: {
             const catalogTool = catalogTools.find((tool) => tool.id === currentPage);
             if (catalogTool) return React.createElement(ToolPage, { toolName: catalogTool.name, setCurrentPage }, React.createElement(UniversalTool, { toolName: catalogTool.name, category: catalogTool.category }));
-            return React.createElement(HomePage, { setCurrentPage, favorites, setFavorites, favoritesOnly });
+            return React.createElement(HomePage, { setCurrentPage, favorites, setFavorites, favoritesOnly, query: searchQuery, setQuery: setSearchQuery });
           }
         }
       };
@@ -441,16 +509,19 @@
               React.createElement('span', { className: "flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-violet-600 to-blue-500 text-sm font-bold text-white shadow-lg shadow-violet-500/20" }, 'D'),
               React.createElement('span', { className: "text-[15px] font-semibold tracking-tight" }, 'devtools', React.createElement('span', { className: "text-[#8b91a6]" }, '.hub'))
             ),
-            React.createElement('nav', { className: 'flex items-center gap-2', 'aria-label': 'Main navigation' },
-              React.createElement('button', { type: 'button', onClick: () => { setFavoritesOnly(false); setCurrentPage('home'); }, className: 'rounded-xl px-3 py-2 text-sm font-medium text-gray-600 hover:bg-violet-50 hover:text-violet-700' }, 'Explore'),
-              React.createElement('button', { type: 'button', onClick: () => { setFavoritesOnly(true); setCurrentPage('home'); }, className: 'rounded-xl px-3 py-2 text-sm font-medium text-gray-600 hover:bg-violet-50 hover:text-violet-700', 'aria-pressed': favoritesOnly }, `Favorites${favorites.length ? ` (${favorites.length})` : ''}`),
-              React.createElement('button', { type: 'button', onClick: () => setTheme(theme === 'dark' ? 'light' : 'dark'), className: 'rounded-xl border border-gray-200 bg-white px-3 py-2 text-sm font-medium shadow-sm hover:border-violet-300', 'aria-label': `Switch to ${theme === 'dark' ? 'light' : 'dark'} theme` }, theme === 'dark' ? 'Light mode' : 'Dark mode')
+            React.createElement('form', { className: 'order-3 w-full sm:order-none sm:w-auto', role: 'search', onSubmit: (event) => { event.preventDefault(); setFavoritesOnly(false); setCurrentPage('home'); } }, React.createElement('label', { className: 'sr-only', htmlFor: 'global-tool-search' }, 'Search all tools'), React.createElement('input', { id: 'global-tool-search', type: 'search', value: searchQuery, onChange: (event) => setSearchQuery(event.target.value), placeholder: 'Search all tools…', className: 'w-full rounded-xl border border-gray-200 bg-white px-3 py-2 text-sm text-gray-800 placeholder:text-gray-400 focus:border-violet-400 focus:outline-none sm:w-52' })),
+            React.createElement('nav', { className: 'order-2 flex flex-wrap items-center justify-end gap-1 sm:order-none sm:gap-2', 'aria-label': 'Main navigation' },
+              React.createElement('button', { type: 'button', onClick: () => { setFavoritesOnly(false); setCurrentPage('home'); }, className: 'rounded-xl px-2 py-2 text-xs font-medium text-gray-600 hover:bg-violet-50 hover:text-violet-700 sm:px-3 sm:text-sm' }, 'Explore'),
+              React.createElement('button', { type: 'button', onClick: () => { setFavoritesOnly(false); setCurrentPage('home'); window.setTimeout(() => document.getElementById('tool-categories')?.scrollIntoView({ behavior: 'smooth' }), 0); }, className: 'rounded-xl px-2 py-2 text-xs font-medium text-gray-600 hover:bg-violet-50 hover:text-violet-700 sm:px-3 sm:text-sm' }, 'Categories'),
+              React.createElement('button', { type: 'button', onClick: () => setCurrentPage('about'), className: 'rounded-xl px-2 py-2 text-xs font-medium text-gray-600 hover:bg-violet-50 hover:text-violet-700 sm:px-3 sm:text-sm' }, 'About'),
+              React.createElement('button', { type: 'button', onClick: () => { setFavoritesOnly(true); setCurrentPage('home'); }, className: 'rounded-xl px-2 py-2 text-xs font-medium text-gray-600 hover:bg-violet-50 hover:text-violet-700 sm:px-3 sm:text-sm', 'aria-pressed': favoritesOnly }, `Favorites${favorites.length ? ` (${favorites.length})` : ''}`),
+              React.createElement('button', { type: 'button', onClick: () => setTheme(theme === 'dark' ? 'light' : 'dark'), className: 'rounded-xl border border-gray-200 bg-white px-2 py-2 text-xs font-medium shadow-sm hover:border-violet-300 sm:px-3 sm:text-sm', 'aria-label': `Switch to ${theme === 'dark' ? 'light' : 'dark'} theme` }, theme === 'dark' ? 'Light' : 'Dark')
             )
           )
         ),
         React.createElement('main', { className: "mx-auto max-w-7xl px-5 py-8 sm:px-8 sm:py-12" }, renderTool()),
         React.createElement(AdvertisementSection),
-        React.createElement('footer', { className: "mx-auto max-w-7xl border-t border-[#e9e9e6] px-5 py-7 text-center text-sm text-[#858b86] sm:px-8" }, '© ', new Date().getFullYear(), ' DevTools Hub. All rights reserved.')
+        React.createElement('footer', { className: 'mx-auto max-w-7xl border-t border-[#e9e9e6] px-5 py-7 text-sm text-[#858b86] sm:px-8' }, React.createElement('div', { className: 'flex flex-col items-center justify-between gap-4 sm:flex-row' }, React.createElement('span', null, '© ', new Date().getFullYear(), ' DevTools Hub. Browser-first tools, built for everyday work.'), React.createElement('nav', { className: 'flex flex-wrap justify-center gap-x-5 gap-y-2', 'aria-label': 'Footer navigation' }, [['About', 'about'], ['Privacy Policy', 'privacy-policy'], ['Terms of Use', 'terms-of-use']].map(([label, page]) => React.createElement('button', { key: page, type: 'button', onClick: () => setCurrentPage(page), className: 'underline-offset-4 hover:text-violet-600 hover:underline' }, label)))))
       );
     }
 
@@ -478,8 +549,7 @@
     };
 
     // Home Page Component
-    const HomePage = ({ setCurrentPage, favorites, setFavorites, favoritesOnly }) => {
-      const [query, setQuery] = React.useState('');
+    const HomePage = ({ setCurrentPage, favorites, setFavorites, favoritesOnly, query, setQuery }) => {
       const [category, setCategory] = React.useState('All Tools');
       const [showPlanned, setShowPlanned] = React.useState(false);
       const ignoreWords = new Set(['i', 'want', 'to', 'a', 'the', 'my', 'into', 'with', 'for', 'please', 'me', 'can', 'you', 'how', 'do', 'tool']);
@@ -504,7 +574,8 @@
             React.createElement('p', { className: 'mx-auto mt-5 max-w-2xl text-base leading-7 text-gray-500 sm:text-lg' }, 'Create, convert, edit, write, generate, and simplify your digital tasks - all in one place.'),
             React.createElement('div', { className: 'relative mx-auto mt-8 max-w-2xl' },
               React.createElement('svg', { className: 'absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-violet-500', viewBox: '0 0 24 24', fill: 'none', stroke: 'currentColor', 'aria-hidden': 'true' }, React.createElement('circle', { cx: '11', cy: '11', r: '7', strokeWidth: '1.8' }), React.createElement('path', { d: 'm16 16 4 4', strokeWidth: '1.8', strokeLinecap: 'round' })),
-              React.createElement('input', { type: 'search', value: query, onChange: (event) => setQuery(event.target.value), placeholder: 'Search tools or describe what you want to do…', 'aria-label': 'Search tools or describe a task', className: 'w-full rounded-2xl border border-gray-200 bg-white py-4 pl-12 pr-4 text-sm shadow-[0_8px_28px_rgba(40,43,80,.08)] placeholder:text-gray-400 focus:border-violet-400 focus:outline-none' }),
+              React.createElement('input', { id: 'home-tool-search', type: 'search', value: query, onChange: (event) => setQuery(event.target.value), placeholder: 'Search tools or describe what you want to do…', 'aria-label': 'Search tools or describe a task', className: 'w-full rounded-2xl border border-gray-200 bg-white py-4 pl-12 pr-4 text-sm shadow-[0_8px_28px_rgba(40,43,80,.08)] placeholder:text-gray-400 focus:border-violet-400 focus:outline-none' }),
+              React.createElement('button', { type: 'button', onClick: () => setQuery(''), className: `absolute right-3 top-1/2 -translate-y-1/2 rounded-lg px-2 py-1 text-xs text-gray-500 hover:text-violet-700 ${query ? '' : 'hidden'}`, 'aria-label': 'Clear search' }, 'Clear'),
               query && React.createElement('p', { className: 'mt-2 text-left text-xs text-gray-500', 'aria-live': 'polite' }, `${visibleTools.length} matching ${visibleTools.length === 1 ? 'tool' : 'tools'}; in-development items are labeled.`)
             ),
             React.createElement('div', { className: 'mt-5 flex flex-wrap justify-center gap-2 text-xs text-gray-500' },
@@ -517,7 +588,7 @@
             React.createElement('h2', { className: 'text-xl font-bold tracking-tight text-gray-900' }, favoritesOnly ? 'Your favorites' : category === 'All Tools' ? 'Popular tools' : category),
             React.createElement('p', { className: 'mt-1 text-sm text-gray-500' }, favoritesOnly ? 'Your saved shortcuts on this device.' : query ? 'Search results from available and planned tools.' : 'A focused set of useful tools, ready to use.')),
           React.createElement('button', { type: 'button', onClick: () => setShowPlanned((value) => !value), 'aria-pressed': showPlanned, className: 'self-start rounded-xl border border-gray-200 bg-white px-3 py-2 text-xs font-semibold text-gray-600 hover:border-violet-300 sm:self-auto' }, showPlanned ? 'Hide in-development tools' : 'Browse full catalog')),
-        React.createElement('div', { className: 'mb-5 -mx-1 overflow-x-auto pb-2' },
+        React.createElement('div', { id: 'tool-categories', className: 'mb-5 -mx-1 overflow-x-auto pb-2 scroll-mt-24' },
           React.createElement('div', { className: 'flex min-w-max gap-2 px-1', role: 'group', 'aria-label': 'Filter tools by category' }, categories.map((item) => React.createElement('button', { key: item, type: 'button', onClick: () => setCategory(item), 'aria-pressed': category === item, className: `category-chip rounded-full border px-4 py-2.5 text-xs font-semibold ${category === item ? 'border-violet-600 bg-violet-600 text-white shadow-sm' : 'border-gray-200 bg-white text-gray-600 hover:border-violet-300 hover:text-violet-700'}` }, item)))),
         React.createElement('div', { className: 'mb-4 flex items-center justify-between gap-3' },
           React.createElement('p', { className: 'text-xs text-gray-500', 'aria-live': 'polite' }, `${visibleTools.length} ${visibleTools.length === 1 ? 'tool' : 'tools'}${includeDevelopment ? ' in catalog' : ' ready to use'}`),
@@ -530,7 +601,7 @@
     const ToolPage = ({ toolName, setCurrentPage, children }) => {
       return React.createElement(
         'div',
-        { className: "rounded-xl bg-white p-6 shadow-md" },
+        { className: "rounded-xl bg-white p-4 shadow-md sm:p-6" },
         React.createElement(
           'button',
           {
