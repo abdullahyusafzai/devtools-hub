@@ -78,7 +78,7 @@
   <script type="module">
   import { plannedToolCatalog } from './src/tool-catalog.js';
   import { generateSpeechWav } from './src/voice-generator.js';
-  import { Base64Tool, CsvToJsonTool, DuplicateLinesTool, GrammarCorrectionTool, HtmlEntitiesTool, JsonToCsvTool, MarkdownPreviewTool, ReadingTimeTool, RegexTesterTool, CssGradientTool, Sha256Tool, TextCleanerTool, UnixTimestampTool, UrlSlugTool, UuidTool } from './src/developer-tools.js';
+  import { Base64Tool, BasicCalculatorTool, CsvToJsonTool, DuplicateLinesTool, GrammarCorrectionTool, HtmlEntitiesTool, JsonToCsvTool, PercentageCalculatorTool, MarkdownPreviewTool, ReadingTimeTool, RegexTesterTool, CssGradientTool, Sha256Tool, TextCleanerTool, UnixTimestampTool, UniversalTool, UrlSlugTool, UuidTool } from './src/developer-tools.js';
 
     // Centralized list of tools with their IDs, names, and SVG icons
     const tools = [
@@ -175,7 +175,7 @@
       'css-gradient-generator': 'Build and preview a two-color CSS gradient.'
     };
     const existingToolNames = new Set(tools.map((tool) => tool.name.toLowerCase()));
-    const implementedCatalogNames = new Set(['Offline Voice Artist', 'Classic Snake Game', 'Image to PDF', 'JSON Formatter', 'JSON Validator'].map((name) => name.toLowerCase()));
+    const implementedCatalogNames = new Set(['Offline Voice Artist', 'Classic Snake Game', 'Image to PDF', 'JSON Formatter', 'JSON Validator', 'Basic Calculator', 'Percentage Calculator'].map((name) => name.toLowerCase()));
     const catalogTools = [
       ...tools.map((tool) => ({
         ...tool,
@@ -189,7 +189,9 @@
       { id: 'snake-game', name: 'Classic Snake Game', category: 'Games & Entertainment', description: 'Play a responsive grid-based Snake game with touch and keyboard controls.', keywords: 'snake game nokia classic games play', available: true, svg: tools[0].svg },
       { id: 'image-to-pdf', name: 'Image to PDF', category: 'PDF & Documents', description: 'Combine PNG and JPEG images into a private, locally created PDF.', keywords: 'pdf convert images jpg png document', available: true, svg: tools.find((tool) => tool.id === 'image-converter').svg },
       { id: 'json-formatter', name: 'JSON Formatter', category: 'Developer Tools', description: 'Format, minify, copy, and download JSON in your browser.', keywords: 'json prettify format minify developer', available: true, svg: tools.find((tool) => tool.id === 'url-encoder-decoder').svg },
-      { id: 'json-validator', name: 'JSON Validator', category: 'Developer Tools', description: 'Validate JSON syntax locally and see clear error feedback.', keywords: 'json validate syntax developer', available: true, svg: tools.find((tool) => tool.id === 'url-encoder-decoder').svg }
+      { id: 'json-validator', name: 'JSON Validator', category: 'Developer Tools', description: 'Validate JSON syntax locally and see clear error feedback.', keywords: 'json validate syntax developer', available: true, svg: tools.find((tool) => tool.id === 'url-encoder-decoder').svg },
+      { id: 'basic-calculator', name: 'Basic Calculator', category: 'Calculators & Converters', description: 'Evaluate arithmetic expressions locally.', keywords: 'calculator math arithmetic', available: true },
+      { id: 'percentage-calculator', name: 'Percentage Calculator', category: 'Calculators & Converters', description: 'Calculate a percentage of a number locally.', keywords: 'percentage percent math calculator', available: true }
     ];
 
     const copyTextToClipboard = async (value) => {
@@ -336,6 +338,10 @@
         switch (currentPage) {
           case 'home':
             return React.createElement(HomePage, { setCurrentPage, favorites, setFavorites, favoritesOnly });
+          case 'basic-calculator':
+            return React.createElement(ToolPage, { toolName: 'Basic Calculator', setCurrentPage }, React.createElement(BasicCalculatorTool));
+          case 'percentage-calculator':
+            return React.createElement(ToolPage, { toolName: 'Percentage Calculator', setCurrentPage }, React.createElement(PercentageCalculatorTool));
           case 'qr-code-generator':
             return React.createElement(ToolPage, { toolName: "QR Code Generator", setCurrentPage }, React.createElement(QRCodeGenerator));
           case 'case-converter':
@@ -398,8 +404,11 @@
             return React.createElement(ToolPage, { toolName: currentPage === 'ai-voice-artist' ? "Offline Voice Artist" : "Text to Speech", setCurrentPage }, React.createElement(TextToSpeech));
           case 'snake-game':
             return React.createElement(ToolPage, { toolName: "Classic Snake Game", setCurrentPage }, React.createElement(window.SnakeGame));
-          default:
+          default: {
+            const catalogTool = catalogTools.find((tool) => tool.id === currentPage);
+            if (catalogTool) return React.createElement(ToolPage, { toolName: catalogTool.name, setCurrentPage }, React.createElement(UniversalTool, { toolName: catalogTool.name, category: catalogTool.category }));
             return React.createElement(HomePage, { setCurrentPage, favorites, setFavorites, favoritesOnly });
+          }
         }
       };
 
@@ -442,11 +451,11 @@
           onClick: tool.available ? () => onClick(tool.id) : undefined,
           disabled: tool.available ? undefined : true,
           className: `flex h-full w-full flex-1 flex-col items-start rounded-xl text-left ${tool.available ? 'cursor-pointer focus-visible:outline-none' : 'cursor-default'}`,
-          'aria-label': `${tool.name}. ${tool.description}${tool.available ? '' : ' In development.'}`
+          'aria-label': `${tool.name}. ${tool.description}${tool.implemented === false ? ' Specialized processing is still being expanded.' : ''}`
         },
           React.createElement('div', { className: 'flex w-full items-center justify-between gap-2 pr-9' },
             React.createElement('span', { className: 'tool-icon flex h-11 w-11 shrink-0 items-center justify-center rounded-xl transition-colors', 'aria-hidden': 'true' }, React.createElement('span', { className: 'h-6 w-6', dangerouslySetInnerHTML: iconMarkup })),
-            React.createElement('span', { className: `rounded-full px-2.5 py-1 text-[10px] font-semibold ${tool.available ? 'bg-emerald-50 text-emerald-700' : 'bg-amber-50 text-amber-800'}` }, tool.available ? 'Ready' : 'In development')),
+            React.createElement('span', { className: `rounded-full px-2.5 py-1 text-[10px] font-semibold ${tool.implemented === false ? 'bg-amber-50 text-amber-800' : 'bg-emerald-50 text-emerald-700'}` }, tool.implemented === false ? 'Workspace' : 'Ready')),
           React.createElement('h3', { className: 'mt-4 text-[15px] font-semibold tracking-tight text-gray-900' }, tool.name),
           React.createElement('p', { className: 'mt-1.5 text-left text-[13px] leading-5 text-gray-500' }, tool.description),
           React.createElement('span', { className: 'mt-auto pt-3 text-[11px] font-medium text-violet-600' }, tool.category)
@@ -498,7 +507,7 @@
           React.createElement('div', { className: 'flex min-w-max gap-2 px-1', role: 'group', 'aria-label': 'Filter tools by category' }, categories.map((item) => React.createElement('button', { key: item, type: 'button', onClick: () => setCategory(item), 'aria-pressed': category === item, className: `category-chip rounded-full border px-4 py-2.5 text-xs font-semibold ${category === item ? 'border-violet-600 bg-violet-600 text-white shadow-sm' : 'border-gray-200 bg-white text-gray-600 hover:border-violet-300 hover:text-violet-700'}` }, item)))),
         React.createElement('div', { className: 'mb-4 flex items-center justify-between gap-3' },
           React.createElement('p', { className: 'text-xs text-gray-500', 'aria-live': 'polite' }, `${visibleTools.length} ${visibleTools.length === 1 ? 'tool' : 'tools'}${includeDevelopment ? ' in catalog' : ' ready to use'}`),
-          React.createElement('span', { className: 'inline-flex items-center gap-2 text-[11px] text-gray-500' }, React.createElement('span', { className: 'h-2 w-2 rounded-full bg-emerald-500' }), 'Ready', React.createElement('span', { className: 'ml-2 h-2 w-2 rounded-full bg-amber-400' }), 'In development')),
+          React.createElement('span', { className: 'inline-flex items-center gap-2 text-[11px] text-gray-500' }, React.createElement('span', { className: 'h-2 w-2 rounded-full bg-emerald-500' }), 'Ready', React.createElement('span', { className: 'ml-2 h-2 w-2 rounded-full bg-amber-400' }), 'Workspace')),
         visibleTools.length ? React.createElement('div', { className: 'grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4' }, visibleTools.map((tool) => React.createElement(ToolCard, { key: tool.id, tool, onClick: setCurrentPage, isFavorite: favorites.includes(tool.id), onToggleFavorite: toggleFavorite }))) : React.createElement('div', { className: 'rounded-2xl border border-dashed border-gray-300 bg-white px-6 py-16 text-center' }, React.createElement('p', { className: 'font-semibold text-gray-800' }, favoritesOnly ? 'No favorites yet' : 'No tools found'), React.createElement('p', { className: 'mt-2 text-sm text-gray-500' }, favoritesOnly ? 'Use the star on any tool card to save it here.' : 'Try another search or browse the full catalog.'))
       );
     };

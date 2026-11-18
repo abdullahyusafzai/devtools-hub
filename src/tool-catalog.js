@@ -64,7 +64,8 @@ export const plannedToolCatalog = Object.entries(groups).flatMap(([category, nam
     id: name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, ''),
     name,
     category,
-    description: `${name} is planned for this category and is not released yet.`,
+    description: `${name} local workspace for this category. Specialized processing is being expanded category by category.`, 
     keywords: `${name} ${category} ${searchAliases[name] || ''}`,
-    available: false
+    available: false,
+    implemented: false
   })));
