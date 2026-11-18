@@ -3,6 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <base href="/">
   <script>
     if (window.location.hash.startsWith('#/')) {
       const route = window.location.hash.slice(2);
@@ -11,6 +12,7 @@
     }
   </script>
   <meta name="theme-color" content="#0b1020">
+  <link rel="canonical" href="https://devtools-hub-ab.vercel.app/">
   <meta name="description" content="Create, convert, edit, write, and simplify digital tasks with the DevTools Hub workspace.">
   <meta property="og:type" content="website">
   <meta property="og:title" content="DevTools Hub — Your digital utility workspace">
@@ -67,6 +69,11 @@
     [data-theme="dark"] footer { border-color: var(--line) !important; color: var(--muted) !important; }
     .snake-board { width: min(100%, 400px); aspect-ratio: 1; touch-action: none; }
     .safe-wrap { overflow-wrap: anywhere; }
+    .route-fallback { max-width: 48rem; margin: 4rem auto; padding: 2rem; border: 1px solid var(--line); border-radius: 1.5rem; background: var(--surface); color: var(--ink); }
+    .route-fallback__eyebrow { margin: 0 0 .75rem; color: var(--muted); font-size: .75rem; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; }
+    .route-fallback h1 { margin: 0 0 .75rem; font-size: clamp(1.75rem, 4vw, 2.5rem); font-weight: 750; letter-spacing: -.03em; }
+    .route-fallback p:not(.route-fallback__eyebrow) { margin: 0; color: var(--muted); line-height: 1.7; }
+    .route-fallback a { display: inline-flex; margin-top: 1.5rem; padding: .75rem 1rem; border-radius: .75rem; background: var(--accent); color: #fff; font-weight: 650; text-decoration: none; }
     @media (prefers-reduced-motion: reduce) { *, *::before, *::after { scroll-behavior: auto !important; transition-duration: .01ms !important; animation-duration: .01ms !important; } }
   </style>
 </head>
@@ -81,6 +88,7 @@
   <!-- All of the React application code goes here -->
   <script type="module">
   import { plannedToolCatalog } from './src/tool-catalog.js';
+  import { SITE_ORIGIN, toolRouteById } from './src/tool-route-data.js';
   import { generateSpeechWav } from './src/voice-generator.js';
   import { Base64Tool, BasicCalculatorTool, CsvToJsonTool, DuplicateLinesTool, GrammarCorrectionTool, HtmlEntitiesTool, JsonToCsvTool, PercentageCalculatorTool, MarkdownPreviewTool, ReadingTimeTool, RegexTesterTool, CssGradientTool, ExpandedUtilityTool, Sha256Tool, TextCleanerTool, UnixTimestampTool, UniversalTool, UrlSlugTool, UuidTool } from './src/developer-tools.js';
   import { PdfTool } from './src/pdf-tools.js';
@@ -318,9 +326,15 @@
       )
     );
 
+    const getPageFromLocation = () => {
+      const hashPage = window.location.hash.replace(/^#\/?/, '');
+      if (hashPage) return hashPage;
+      return window.location.pathname.match(/^\/tools\/([a-z0-9-]+)\/?$/i)?.[1] || 'home';
+    };
+
     // Main App component that manages navigation and workspace preferences
     function App() {
-      const initialPage = window.location.hash.replace(/^#\/?/, '') || 'home';
+      const initialPage = getPageFromLocation();
       const [currentPage, setCurrentPageState] = React.useState(initialPage);
       const [theme, setTheme] = React.useState(() => {
         try { return window.localStorage.getItem('devtools-hub-theme') || 'dark'; } catch { return 'dark'; }
@@ -333,27 +347,39 @@
 
       const setCurrentPage = (page) => {
         setCurrentPageState(page);
-        const nextUrl = page === 'home' ? `${window.location.pathname === '/' ? '/' : window.location.pathname}${window.location.search}` : `#${page}`;
+        const nextUrl = page === 'home'
+          ? '/'
+          : toolRouteById.has(page)
+            ? `/tools/${encodeURIComponent(page)}/`
+            : `/#${page}`;
         window.history.pushState(null, '', nextUrl);
         window.scrollTo({ top: 0, behavior: 'smooth' });
       };
 
       React.useEffect(() => {
-        const syncPage = () => setCurrentPageState(window.location.hash.replace(/^#\/?/, '') || 'home');
+        const syncPage = () => setCurrentPageState(getPageFromLocation());
         window.addEventListener('popstate', syncPage);
         return () => window.removeEventListener('popstate', syncPage);
       }, []);
 
       React.useEffect(() => {
         const pageInfo = catalogTools.find((tool) => tool.id === currentPage);
+        const routeInfo = toolRouteById.get(currentPage);
         const staticPageInfo = { about: { title: 'About DevTools Hub', description: 'A practical collection of browser-first tools for everyday digital work.' }, 'privacy-policy': { title: 'Privacy Policy', description: 'How DevTools Hub handles browser preferences and locally processed content.' }, 'terms-of-use': { title: 'Terms of Use', description: 'Terms for using DevTools Hub browser utilities.' } }[currentPage];
-        const pageTitle = pageInfo?.name || staticPageInfo?.title || 'DevTools Hub';
-        const pageDescription = pageInfo?.description || staticPageInfo?.description || 'Create, convert, edit, write, and simplify digital tasks with the DevTools Hub workspace.';
+        const pageTitle = routeInfo?.name || pageInfo?.name || staticPageInfo?.title || 'DevTools Hub';
+        const pageDescription = routeInfo?.description || pageInfo?.description || staticPageInfo?.description || 'Create, convert, edit, write, and simplify digital tasks with the DevTools Hub workspace.';
+        const canonicalUrl = routeInfo ? `${SITE_ORIGIN}/tools/${routeInfo.id}/` : `${SITE_ORIGIN}/`;
         document.title = currentPage === 'home' ? 'DevTools Hub — Your digital utility workspace' : `${pageTitle} — DevTools Hub`;
+        document.querySelector('link[rel="canonical"]')?.setAttribute('href', canonicalUrl);
         document.querySelector('meta[name="description"]')?.setAttribute('content', pageDescription);
         document.querySelector('meta[property="og:title"]')?.setAttribute('content', document.title);
         document.querySelector('meta[property="og:description"]')?.setAttribute('content', pageDescription);
+        document.querySelector('meta[property="og:url"]')?.setAttribute('content', canonicalUrl);
       }, [currentPage]);
+
+      React.useEffect(() => {
+        document.getElementById('route-fallback')?.remove();
+      }, []);
 
       React.useEffect(() => {
         document.documentElement.setAttribute('data-theme', theme);

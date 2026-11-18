@@ -99,7 +99,7 @@ Classic Snake Game; Tic-Tac-Toe; Memory Matching Game; Number Guessing Game; Typ
 - Local JSON Formatter/Validator, Regex Tester, CSV/JSON converters, safe Markdown Preview, CSS Gradient/Shadow generators, Base64 and HTML encoders, UUID, SHA-256, timestamp, and URL tools.
 - Added JWT decoding (explicitly not verification), line-based code diff, HTTP status reference, sample-data and Lorem Ipsum generators, date difference, stopwatch, countdown/Pomodoro timers, Tic-Tac-Toe, and fixed text/calculator utilities.
 - Added server-side AI Text Summarizer and AI Rephrasing through Vercel AI Gateway. The endpoint validates inputs, limits to eight requests per IP per minute using the existing Upstash KV credentials, and does not store request text.
-- Added `robots.txt`, a homepage sitemap, security headers, and disabled AdSense until a valid ad-slot ID is supplied.
+- Added `robots.txt`, a generated tool-specific sitemap, crawlable static tool routes with canonical metadata and no-JavaScript content fallbacks, security headers, and disabled AdSense until a valid ad-slot ID is supplied.
 - Added unit coverage for safe arithmetic, JWT decoding, line diff, and PDF page selection.
 
 ## Pending work
@@ -110,12 +110,11 @@ Classic Snake Game; Tic-Tac-Toe; Memory Matching Game; Number Guessing Game; Typ
 ## Known constraints
 - AI writing sends submitted text to the hosted Gemini model through Vercel AI Gateway and may incur model charges. It is explicitly opt-in and rate-limited; review AI Gateway budgets/usage controls before public release. The Vercel deployment supplies Gateway authentication; local API testing needs `npm run dev:vercel` and configured runtime credentials.
 - Upstash KV REST environment variables are required for the AI endpoint's fail-closed rate limit. They are already configured for this project.
-- Hash-based SPA routes remain in place to preserve existing links. Titles/descriptions update in the browser, but tool pages do not yet have independently rendered crawlable URLs; `sitemap.xml` lists only the homepage.
+- Hash-based SPA routes remain supported for existing links. Each ready tool also has a generated `/tools/<id>/` route with static title, description, canonical URL, and readable no-JavaScript content; the build generates a tool-specific sitemap.
 - PDF operations use `pdf-lib`, run locally, and do not support encrypted PDFs. Image-to-PDF remains a separate local tool.
 - Offline speech currently has English voices only. Tailwind and React are still served from CDNs as in the inherited project.
 
 ## Next priorities
-1. Complete the full browser QA matrix and test real PDF/audio downloads.
-2. Add standalone crawlable tool routes and a tool-specific sitemap if SEO indexing is required.
-3. Continue implementing the remaining tools in the catalog and expand automated regression/accessibility coverage.
-4. Add additional offline voice languages and configure production advertising only with a valid ad slot.
+1. Continue implementing the remaining tools category by category and expand automated regression/accessibility coverage.
+2. Add additional offline voice languages.
+3. Configure production advertising only after a valid AdSense ad-slot ID is supplied.

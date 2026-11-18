@@ -262,7 +262,11 @@
 - [ ] 2048 Puzzle
 - [ ] Simple Sudoku
 
+## SEO routes
+- [x] Generate standalone `/tools/<id>/` pages for ready tools with per-tool metadata and readable static content.
+- [x] Generate a sitemap containing the homepage and all ready tool routes.
+
 ## Operational follow-up
 - [ ] Verify offline voice synthesis and downloadable WAV output in supported browsers.
 - [ ] Configure a valid AdSense ad-slot ID before showing ads.
-- [ ] Add broader device/accessibility tests and UI-level PDF/AI function tests (11 unit tests currently pass).
+- [ ] Add broader device/accessibility tests and UI-level PDF/AI function tests (17 automated tests currently pass).
