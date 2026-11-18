@@ -78,7 +78,7 @@
   <script type="module">
   import { plannedToolCatalog } from './src/tool-catalog.js';
   import { generateSpeechWav } from './src/voice-generator.js';
-  import { Base64Tool, BasicCalculatorTool, CsvToJsonTool, DuplicateLinesTool, GrammarCorrectionTool, HtmlEntitiesTool, JsonToCsvTool, PercentageCalculatorTool, MarkdownPreviewTool, ReadingTimeTool, RegexTesterTool, CssGradientTool, Sha256Tool, TextCleanerTool, UnixTimestampTool, UniversalTool, UrlSlugTool, UuidTool } from './src/developer-tools.js';
+  import { Base64Tool, BasicCalculatorTool, CsvToJsonTool, DuplicateLinesTool, GrammarCorrectionTool, HtmlEntitiesTool, JsonToCsvTool, PercentageCalculatorTool, MarkdownPreviewTool, ReadingTimeTool, RegexTesterTool, CssGradientTool, ExpandedUtilityTool, Sha256Tool, TextCleanerTool, UnixTimestampTool, UniversalTool, UrlSlugTool, UuidTool } from './src/developer-tools.js';
 
     // Centralized list of tools with their IDs, names, and SVG icons
     const tools = [
@@ -175,7 +175,7 @@
       'css-gradient-generator': 'Build and preview a two-color CSS gradient.'
     };
     const existingToolNames = new Set(tools.map((tool) => tool.name.toLowerCase()));
-    const implementedCatalogNames = new Set(['Offline Voice Artist', 'Classic Snake Game', 'Image to PDF', 'JSON Formatter', 'JSON Validator', 'Basic Calculator', 'Percentage Calculator'].map((name) => name.toLowerCase()));
+    const implementedCatalogNames = new Set(['Offline Voice Artist', 'Classic Snake Game', 'Image to PDF', 'JSON Formatter', 'JSON Validator', 'Basic Calculator', 'Percentage Calculator', 'Text Sorter', 'Whitespace Remover', 'Find and Replace', 'Reading Time Calculator', 'Random Number Generator', 'Password Strength Checker', 'Meta Tag Generator', 'Discount Calculator', 'Age Calculator', 'UTM Campaign Builder'].map((name) => name.toLowerCase()));
     const catalogTools = [
       ...tools.map((tool) => ({
         ...tool,
@@ -191,7 +191,10 @@
       { id: 'json-formatter', name: 'JSON Formatter', category: 'Developer Tools', description: 'Format, minify, copy, and download JSON in your browser.', keywords: 'json prettify format minify developer', available: true, svg: tools.find((tool) => tool.id === 'url-encoder-decoder').svg },
       { id: 'json-validator', name: 'JSON Validator', category: 'Developer Tools', description: 'Validate JSON syntax locally and see clear error feedback.', keywords: 'json validate syntax developer', available: true, svg: tools.find((tool) => tool.id === 'url-encoder-decoder').svg },
       { id: 'basic-calculator', name: 'Basic Calculator', category: 'Calculators & Converters', description: 'Evaluate arithmetic expressions locally.', keywords: 'calculator math arithmetic', available: true },
-      { id: 'percentage-calculator', name: 'Percentage Calculator', category: 'Calculators & Converters', description: 'Calculate a percentage of a number locally.', keywords: 'percentage percent math calculator', available: true }
+      { id: 'percentage-calculator', name: 'Percentage Calculator', category: 'Calculators & Converters', description: 'Calculate a percentage of a number locally.', keywords: 'percentage percent math calculator', available: true },
+      ...[
+        ['text-sorter', 'Text Sorter', 'Productivity & Text'], ['whitespace-remover', 'Whitespace Remover', 'Productivity & Text'], ['find-and-replace', 'Find and Replace', 'Productivity & Text'], ['reading-time-calculator', 'Reading Time Calculator', 'Productivity & Text'], ['random-number-generator', 'Random Number Generator', 'Productivity & Text'], ['password-strength-checker', 'Password Strength Checker', 'Security & Privacy'], ['meta-tag-generator', 'Meta Tag Generator', 'SEO & Marketing'], ['discount-calculator', 'Discount Calculator', 'Calculators & Converters'], ['age-calculator', 'Age Calculator', 'Calculators & Converters'], ['utm-campaign-builder', 'UTM Campaign Builder', 'SEO & Marketing']
+      ].map(([id, name, category]) => ({ id, name, category, description: `${name} runs locally in your browser.`, keywords: `${name} ${category}`, available: true, expanded: true }))
     ];
 
     const copyTextToClipboard = async (value) => {
@@ -342,6 +345,19 @@
             return React.createElement(ToolPage, { toolName: 'Basic Calculator', setCurrentPage }, React.createElement(BasicCalculatorTool));
           case 'percentage-calculator':
             return React.createElement(ToolPage, { toolName: 'Percentage Calculator', setCurrentPage }, React.createElement(PercentageCalculatorTool));
+          case 'text-sorter':
+          case 'whitespace-remover':
+          case 'find-and-replace':
+          case 'reading-time-calculator':
+          case 'random-number-generator':
+          case 'password-strength-checker':
+          case 'meta-tag-generator':
+          case 'discount-calculator':
+          case 'age-calculator':
+          case 'utm-campaign-builder': {
+            const expandedNames = { 'text-sorter': 'Text Sorter', 'whitespace-remover': 'Whitespace Remover', 'find-and-replace': 'Find and Replace', 'reading-time-calculator': 'Reading Time Calculator', 'random-number-generator': 'Random Number Generator', 'password-strength-checker': 'Password Strength Checker', 'meta-tag-generator': 'Meta Tag Generator', 'discount-calculator': 'Discount Calculator', 'age-calculator': 'Age Calculator', 'utm-campaign-builder': 'UTM Campaign Builder' };
+            return React.createElement(ToolPage, { toolName: expandedNames[currentPage], setCurrentPage }, React.createElement(ExpandedUtilityTool, { toolName: expandedNames[currentPage] }));
+          }
           case 'qr-code-generator':
             return React.createElement(ToolPage, { toolName: "QR Code Generator", setCurrentPage }, React.createElement(QRCodeGenerator));
           case 'case-converter':
@@ -395,8 +411,6 @@
             return React.createElement(ToolPage, { toolName: 'Remove Duplicate Lines', setCurrentPage }, React.createElement(DuplicateLinesTool));
           case 'text-cleaner':
             return React.createElement(ToolPage, { toolName: 'Text Cleaner', setCurrentPage }, React.createElement(TextCleanerTool));
-          case 'reading-time-calculator':
-            return React.createElement(ToolPage, { toolName: 'Reading Time Calculator', setCurrentPage }, React.createElement(ReadingTimeTool));
           case 'url-slug-generator':
             return React.createElement(ToolPage, { toolName: 'URL Slug Generator', setCurrentPage }, React.createElement(UrlSlugTool));
           case 'text-to-speech':

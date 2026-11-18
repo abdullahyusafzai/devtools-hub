@@ -465,6 +465,30 @@ export function PercentageCalculatorTool() {
   return h('section', { className: 'max-w-2xl' }, h(ToolIntro, { title: 'Percentage Calculator' }, 'Calculate a percentage of any number locally.'), h('div', { className: 'grid gap-4 sm:grid-cols-2' }, h(TextInput, { id: 'percentage-value', label: 'Number', value, onChange: (event) => setValue(event.target.value), inputMode: 'decimal' }), h(TextInput, { id: 'percentage-rate', label: 'Percent', value: percent, onChange: (event) => setPercent(event.target.value), inputMode: 'decimal' })), h('button', { type: 'button', className: `${buttonClass} mt-4`, onClick: calculate, disabled: !value || !percent }, 'Calculate percentage'), result && h(OutputPanel, { label: 'Result', value: result, rows: 2 }));
 }
 
+export function ExpandedUtilityTool({ toolName }) {
+  const [input, setInput] = React.useState('');
+  const [second, setSecond] = React.useState('');
+  const [output, setOutput] = React.useState('');
+  const run = () => {
+    const value = input.trim();
+    let result = '';
+    if (toolName === 'Text Sorter') result = value.split(/\r?\n/).filter(Boolean).sort((a, b) => a.localeCompare(b, undefined, { sensitivity: 'base' })).join('\n');
+    if (toolName === 'Whitespace Remover') result = value.replace(/[ \t]+/g, ' ').replace(/^ +| +$/gm, '').replace(/\n{3,}/g, '\n\n');
+    if (toolName === 'Find and Replace') result = value.split(second).join(input ? (window.prompt('Replace with:', '') || '') : '');
+    if (toolName === 'Reading Time Calculator') result = `${countWords(value)} words\nAbout ${Math.max(1, Math.ceil(countWords(value) / 200))} minute(s) at 200 words per minute.`;
+    if (toolName === 'Random Number Generator') { const min = Number(input); const max = Number(second); result = Number.isFinite(min) && Number.isFinite(max) && max >= min ? String(Math.floor(Math.random() * (max - min + 1)) + min) : 'Enter a valid minimum and maximum.'; }
+    if (toolName === 'Password Strength Checker') { const score = [value.length >= 12, /[a-z]/.test(value), /[A-Z]/.test(value), /\d/.test(value), /[^A-Za-z0-9]/.test(value)].filter(Boolean).length; result = `${['Very weak', 'Weak', 'Fair', 'Good', 'Strong', 'Very strong'][score]} (${score}/5 checks)\n${value.length < 12 ? 'Use at least 12 characters.\n' : ''}${!/[A-Z]/.test(value) ? 'Add uppercase letters.\n' : ''}${!/[a-z]/.test(value) ? 'Add lowercase letters.\n' : ''}${!/\d/.test(value) ? 'Add numbers.\n' : ''}${!/[^A-Za-z0-9]/.test(value) ? 'Add a symbol.' : ''}`; }
+    if (toolName === 'URL Slug Generator') result = createUrlSlug(value);
+    if (toolName === 'Meta Tag Generator') result = `<title>${value}</title>\n<meta name="description" content="${second.replace(/"/g, '&quot;')}">`;
+    if (toolName === 'Discount Calculator') { const price = Number(input); const discount = Number(second); result = Number.isFinite(price) && Number.isFinite(discount) ? `Final price: ${(price * (1 - discount / 100)).toFixed(2)}\nYou save: ${(price * discount / 100).toFixed(2)}` : 'Enter a valid price and discount.'; }
+    if (toolName === 'UTM Campaign Builder') { const url = value; const parts = second.split(',').map((part) => part.trim()); result = parts.length >= 3 ? `${url}${url.includes('?') ? '&' : '?'}utm_source=${encodeURIComponent(parts[0])}&utm_medium=${encodeURIComponent(parts[1])}&utm_campaign=${encodeURIComponent(parts[2])}` : 'Enter source, medium, and campaign separated by commas.'; }
+    if (toolName === 'Age Calculator') { const date = new Date(input); if (Number.isNaN(date.getTime())) result = 'Enter a valid birth date.'; else { const now = new Date(); let age = now.getFullYear() - date.getFullYear(); if (now < new Date(now.getFullYear(), date.getMonth(), date.getDate())) age--; result = `${Math.max(0, age)} years old`; } }
+    setOutput(result || 'Enter content to process.');
+  };
+  const isText = ['Text Sorter', 'Whitespace Remover', 'Find and Replace', 'Reading Time Calculator', 'URL Slug Generator', 'Meta Tag Generator'].includes(toolName);
+  return h('section', { className: 'max-w-3xl' }, h(ToolIntro, { title: toolName }, 'A local browser utility. Your input stays on this device.'), toolName === 'Age Calculator' ? h(TextInput, { id: 'expanded-date', label: 'Birth date', value: input, onChange: (event) => setInput(event.target.value), inputMode: 'text', placeholder: 'YYYY-MM-DD' }) : h(TextArea, { id: 'expanded-input', label: isText ? 'Input' : toolName === 'Password Strength Checker' ? 'Password' : 'Value', value: input, onChange: (event) => setInput(event.target.value), rows: isText ? 7 : 3, placeholder: toolName === 'Text Sorter' ? 'One item per line' : '' }), ['Random Number Generator', 'Discount Calculator', 'Meta Tag Generator', 'UTM Campaign Builder', 'Find and Replace'].includes(toolName) && h(TextInput, { id: 'expanded-second', label: toolName === 'Discount Calculator' ? 'Discount percent' : toolName === 'Random Number Generator' ? 'Maximum' : toolName === 'UTM Campaign Builder' ? 'Source, medium, campaign' : toolName === 'Find and Replace' ? 'Find text' : 'Description', value: second, onChange: (event) => setSecond(event.target.value), inputMode: 'text' }), h('button', { type: 'button', className: `${buttonClass} mt-4`, onClick: run, disabled: !input.trim() }, 'Process locally'), output && h(OutputPanel, { label: 'Output', value: output, rows: 6 }));
+}
+
 export function UniversalTool({ toolName, category }) {
   const [input, setInput] = React.useState('');
   const [output, setOutput] = React.useState('');
