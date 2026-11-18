@@ -14,14 +14,14 @@
 - [x] Image Resizer
 - [x] Image Compressor
 - [x] Simple Image Cropper
-- [x] Text to Speech (browser preview)
+- [x] Text to Speech (offline WAV playback and download)
 
 ## AI writing & language
-- [ ] AI Rephrasing Tool
+- [x] AI Rephrasing Tool (server-side AI Gateway; explicit user action, rate-limited)
 - [ ] Grammar Checker
 - [ ] Spell Checker
 - [ ] Sentence Rewriter
-- [ ] Text Summarizer
+- [x] Text Summarizer (server-side AI Gateway; explicit user action, rate-limited)
 - [ ] AI Content Improver
 - [ ] Tone Changer
 - [ ] AI Email Writer
@@ -37,8 +37,8 @@
 - [ ] AI Study Notes Generator
 
 ## PDF & documents
-- [ ] PDF Merger
-- [ ] PDF Splitter
+- [x] PDF Merger (local processing; per-file and combined-size limits)
+- [x] PDF Splitter (exports selected pages as separate PDFs)
 - [ ] PDF Compressor
 - [ ] PDF to Word
 - [ ] Word to PDF
@@ -46,17 +46,18 @@
 - [x] Image to PDF (local PNG/JPEG processing; up to 20 images; real PDF output)
 - [ ] PDF to Excel
 - [ ] Excel to PDF
-- [ ] PDF Page Rotator
-- [ ] PDF Page Reorder
-- [ ] PDF Watermark
+- [x] PDF Page Rotator
+- [x] PDF Page Reorder
+- [x] PDF Watermark
 - [ ] PDF Password Protection
 - [ ] PDF Unlocker for authorized files
 - [ ] PDF Signature Tool
 - [ ] PDF Text Extractor
 - [ ] PDF OCR
-- [ ] PDF Page Remover
-- [ ] PDF Page Extractor
+- [x] PDF Page Remover
+- [x] PDF Page Extractor
 - [ ] PDF Redaction Tool
+- [x] PDF Metadata Viewer (reads embedded metadata locally)
 
 ## Image & design
 - [x] Image Converter
@@ -138,29 +139,29 @@
 - [ ] CSS Formatter
 - [ ] JavaScript Formatter
 - [ ] SQL Formatter
-- [ ] Base64 Encoder/Decoder
+- [x] Base64 Encoder/Decoder
 - [x] URL Encoder/Decoder
-- [ ] HTML Encoder/Decoder
-- [ ] JWT Decoder
-- [ ] UUID Generator
-- [ ] SHA-256 Hash Generator
+- [x] HTML Encoder/Decoder
+- [x] JWT Decoder (decoding only; does not verify signatures)
+- [x] UUID Generator
+- [x] SHA-256 Hash Generator
 - [x] Regex Tester (local JavaScript pattern matching)
-- [ ] Code Difference Checker
+- [x] Code Difference Checker (line-based diff, capped at 250 lines per side)
 - [x] Markdown Preview (safe subset; raw HTML escaped)
 - [ ] HTML Preview
 - [x] CSV to JSON
 - [x] JSON to CSV
-- [ ] Unix Timestamp Converter
+- [x] Unix Timestamp Converter
 - [x] CSS Gradient Generator
-- [ ] CSS Shadow Generator
-- [ ] Sample Data Generator
+- [x] CSS Shadow Generator
+- [x] Sample Data Generator
 
 ## Calculators & converters
-- [ ] Basic Calculator
+- [x] Basic Calculator (safe arithmetic parser; no eval)
 - [ ] Scientific Calculator
-- [ ] Percentage Calculator
-- [ ] Age Calculator
-- [ ] Date Difference Calculator
+- [x] Percentage Calculator
+- [x] Age Calculator
+- [x] Date Difference Calculator
 - [ ] Time Zone Converter
 - [ ] Currency Converter
 - [ ] Length Converter
@@ -168,7 +169,7 @@
 - [x] Temperature Converter
 - [ ] Area Converter
 - [ ] Speed Converter
-- [ ] Discount Calculator
+- [x] Discount Calculator
 - [ ] Loan Calculator
 - [ ] EMI Calculator
 - [ ] Compound Interest Calculator
@@ -182,22 +183,22 @@
 - [x] Character Counter
 - [x] Case Converter
 - [x] Dummy Text Generator
-- [ ] Remove Duplicate Lines
-- [ ] Text Sorter
-- [ ] Text Cleaner
-- [ ] Whitespace Remover
-- [ ] Find and Replace
-- [ ] Reading Time Calculator
-- [ ] Random Number Generator
+- [x] Remove Duplicate Lines
+- [x] Text Sorter
+- [x] Text Cleaner
+- [x] Whitespace Remover
+- [x] Find and Replace
+- [x] Reading Time Calculator
+- [x] Random Number Generator
 - [ ] Random Name Picker
-- [ ] Stopwatch
-- [ ] Countdown Timer
-- [ ] Pomodoro Timer
+- [x] Stopwatch
+- [x] Countdown Timer
+- [x] Pomodoro Timer
 - [ ] Notes Tool
 - [ ] Checklist Maker
 
 ## SEO & marketing
-- [ ] Meta Tag Generator
+- [x] Meta Tag Generator
 - [ ] SEO Title Generator
 - [ ] Meta Description Generator
 - [ ] Keyword Density Checker
@@ -205,10 +206,10 @@
 - [ ] Search Result Preview
 - [ ] Sitemap Generator
 - [ ] Robots.txt Generator
-- [ ] URL Slug Generator
+- [x] URL Slug Generator
 - [ ] Canonical Tag Generator
 - [ ] Schema Markup Generator
-- [ ] UTM Campaign Builder
+- [x] UTM Campaign Builder (validated URLs and query parameters)
 - [ ] Social Media Post Formatter
 - [ ] Website Redirect Analyzer
 
@@ -239,7 +240,7 @@
 
 ## Security & privacy
 - [x] Secure Password Generator
-- [ ] Password Strength Checker
+- [x] Password Strength Checker
 - [ ] File Hash Calculator
 - [ ] Checksum Verifier
 - [ ] Text Redaction Tool
@@ -251,7 +252,7 @@
 
 ## Games & entertainment
 - [x] Classic Snake Game
-- [ ] Tic-Tac-Toe
+- [x] Tic-Tac-Toe
 - [ ] Memory Matching Game
 - [ ] Number Guessing Game
 - [ ] Typing Speed Test
@@ -261,7 +262,11 @@
 - [ ] 2048 Puzzle
 - [ ] Simple Sudoku
 
+## SEO routes
+- [x] Generate standalone `/tools/<id>/` pages for ready tools with per-tool metadata and readable static content.
+- [x] Generate a sitemap containing the homepage and all ready tool routes.
+
 ## Operational follow-up
 - [ ] Verify offline voice synthesis and downloadable WAV output in supported browsers.
 - [ ] Configure a valid AdSense ad-slot ID before showing ads.
-- [ ] Add automated regression, accessibility, and broader device tests.
+- [ ] Add broader device/accessibility tests and UI-level PDF/AI function tests (17 automated tests currently pass).

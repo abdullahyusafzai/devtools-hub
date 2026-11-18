@@ -91,29 +91,30 @@ Classic Snake Game; Tic-Tac-Toe; Memory Matching Game; Number Guessing Game; Typ
 - URL shortening/dynamic QR require persistent storage, redirect safeguards, and abuse controls before release.
 
 ## Implemented in this phase
-- All 12 original tool implementations preserved.
-- Responsive redesigned dashboard, category/search discovery, descriptive task suggestions, favorites, and saved light/dark mode.
-- Full requested catalog is discoverable; unfinished tools are labeled In development and are not launchable.
-- Offline Voice Artist/Text to Speech route with locally synthesized speech, self-hosted English engine data, and downloadable WAV output.
-- Local Image to PDF tool for multiple PNG/JPEG images, with size/count validation and a real downloadable PDF.
-- Local JSON Formatter (pretty-print/minify/copy/download) and JSON Validator with clear syntax errors.
-- Local Regex Tester, CSV-to-JSON and JSON-to-CSV converters, safe Markdown Preview, and CSS Gradient Generator.
-- Original Snake game with keyboard/touch controls, difficulty, pause/restart, scoring, collision handling, and local high score.
-- Vite workflow, README, `.env.example`, and tool checklist.
+- Preserved existing tools and hash routes while extending the current React-on-CDN/Vite app.
+- Responsive dashboard improvements: shared search, category navigation, favorites, saved theme, About/Privacy/Terms pages, dynamic document titles/descriptions, and mobile tool layout.
+- The complete requested catalog remains discoverable; tools without real implementations stay labeled In development and cannot be launched.
+- Offline Voice Artist synthesizes in-browser with self-hosted English eSpeak NG data and exports real WAV audio.
+- Local PDF suite: merge, split selected pages into separate files, extract, remove, reorder, rotate, watermark, and inspect metadata, with per-file and aggregate size limits.
+- Local JSON Formatter/Validator, Regex Tester, CSV/JSON converters, safe Markdown Preview, CSS Gradient/Shadow generators, Base64 and HTML encoders, UUID, SHA-256, timestamp, and URL tools.
+- Added JWT decoding (explicitly not verification), line-based code diff, HTTP status reference, sample-data and Lorem Ipsum generators, date difference, stopwatch, countdown/Pomodoro timers, Tic-Tac-Toe, and fixed text/calculator utilities.
+- Added server-side AI Text Summarizer and AI Rephrasing through Vercel AI Gateway. The endpoint validates inputs, limits to eight requests per IP per minute using the existing Upstash KV credentials, and does not store request text.
+- Added `robots.txt`, a generated tool-specific sitemap, crawlable static tool routes with canonical metadata and no-JavaScript content fallbacks, security headers, and disabled AdSense until a valid ad-slot ID is supplied.
+- Added unit coverage for safe arithmetic, JWT decoding, line diff, and PDF page selection.
 
 ## Pending work
-- Actual implementations for the remaining catalog tools, added category by category.
-- Automated tests for every released tool; complete browser/device/accessibility regression testing.
-- Additional language packs for offline voice synthesis.
-- Configure a real AdSense ad-slot ID before displaying ads; the inherited slot value is a publisher ID, not an ad slot.
+- The remaining catalog entries are intentionally still in development; implement them category by category rather than showing generic or misleading outputs.
+- Complete browser/device/accessibility tests, exercise PDF file outputs, and verify offline speech WAV generation in supported browsers.
+- Additional offline speech languages, a social sharing image, and a valid AdSense ad-slot ID are not configured.
 
 ## Known constraints
-- Offline speech currently includes English voice variants only. The engine and English voice data are served by the app and run in the browser; synthesis itself does not call a remote speech service.
-- Local Vite preview serves the UI; use the Vercel development runtime only for features that require Vercel Functions.
-- Tailwind is still loaded from its CDN as in the original static project; the Vite production build reports its upstream recommendation to bundle Tailwind for production.
+- AI writing sends submitted text to the hosted Gemini model through Vercel AI Gateway and may incur model charges. It is explicitly opt-in and rate-limited; review AI Gateway budgets/usage controls before public release. The Vercel deployment supplies Gateway authentication; local API testing needs `npm run dev:vercel` and configured runtime credentials.
+- Upstash KV REST environment variables are required for the AI endpoint's fail-closed rate limit. They are already configured for this project.
+- Hash-based SPA routes remain supported for existing links. Each ready tool also has a generated `/tools/<id>/` route with static title, description, canonical URL, and readable no-JavaScript content; the build generates a tool-specific sitemap.
+- PDF operations use `pdf-lib`, run locally, and do not support encrypted PDFs. Image-to-PDF remains a separate local tool.
+- Offline speech currently has English voices only. Tailwind and React are still served from CDNs as in the inherited project.
 
 ## Next priorities
-1. Complete browser verification of the offline speech workflow and supported voice options.
-2. Expand the PDF and developer tool families, and add more image catalog utilities.
-3. Add automated regression checks for each released tool and representative responsive/accessibility tests.
-4. Continue category-by-category expansion and internationalization.
+1. Continue implementing the remaining tools category by category and expand automated regression/accessibility coverage.
+2. Add additional offline voice languages.
+3. Configure production advertising only after a valid AdSense ad-slot ID is supplied.
